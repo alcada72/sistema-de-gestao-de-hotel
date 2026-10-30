@@ -29,8 +29,11 @@
 
   <div class="room-grid full-room-grid" id="allRoomsGrid">
     <?php foreach ($quartos as $quarto): ?>
-      <article role="button" tabindex="0" data-room-detail="<?= htmlspecialchars($quarto['id']) ?>"
-        class="room-tile <?= htmlspecialchars($quarto['estado']) ?>">
+
+      <article role="button" tabindex="0" data-room-detail="<?= htmlspecialchars($quarto['id']) ?>" class="room-tile 
+
+            <?= htmlspecialchars($quarto['estado']) == 'ocupado' ? 'room-occupied' : '' ?>
+            <?= htmlspecialchars($quarto['estado']) == 'manutencao' ? 'room-maintenance' : '' ?>">
 
         <?php if ($quarto['tipo'] === 'vip'): ?>
           <span class="vip-tag">VIP</span>
@@ -61,27 +64,11 @@
         </span>
 
         <span class="room-action">
-          <?php
-          switch ($quarto['estado']) {
-            case 'manutencao':
-              echo 'Em manutenção';
-              break;
-
-            case 'ocupado':
-              echo 'Quarto ocupado';
-              break;
-
-            case 'disponivel':
-              echo 'Quarto disponível';
-              break;
-
-            default:
-              echo 'Estado desconhecido';
-          }
-          ?>
+          <?= htmlspecialchars($statusRoomLabel[$quarto['estado']] ?? 'Estado desconhecido') ?>
         </span>
 
       </article>
+
     <?php endforeach; ?>
   </div>
 </section>

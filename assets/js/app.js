@@ -228,26 +228,37 @@ let lastFocusedElement = null;
 
 function openModal(id) {
   const modal = document.getElementById(id);
+
   if (!modal) return;
+
   lastFocusedElement = document.activeElement;
+
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
+
   document.body.style.overflow = "hidden";
 
   if (id === "reservationModal") {
-    const form = $("#reservationForm");
-    if (form) {
-      form.elements.checkin.value ||= today();
-      form.elements.checkout.value ||= addDays(today(), 1);
-    }
-    renderRoomOptions();
+    const form = document.getElementById("reservationForm");
 
-    updateReservationTotal();
+    if (form) {
+      const checkin = form.elements["dados[data_entrada]"];
+      const checkout = form.elements["dados[data_saida]"];
+
+      if (checkin && !checkin.value) {
+        checkin.value = today();
+      }
+
+      if (checkout && !checkout.value) {
+        checkout.value = addDays(today(), 1);
+      }
+    }
   }
 
   const firstInput = modal.querySelector(
     "input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button",
   );
+
   if (firstInput) firstInput.focus();
 }
 
@@ -562,53 +573,6 @@ function updateStats() {
   $(".nav-count").textContent = rooms.length;
 }
 
-function renderRoomOptions() {
-  const select = $("#reservationRoom");
-  const previousValue = select.value;
-
-  const availableRooms = rooms.filter(canBookRoom);
-
-  select.innerHTML =
-    '<option value="">Seleciona um quarto disponível</option>' +
-    availableRooms
-      .map(
-        (room) => `
-      <option value="${room.id}" data-price="${room.price}" data-capacity="${room.capacity}">
-       A${room.andar}   Quarto ${room.number} · ${room.type.toUpperCase()} · ${money(room.price)}/noite
-      </option>
-    `,
-      )
-      .join("");
-
-  if (availableRooms.some((room) => String(room.id) === previousValue)) {
-    select.value = previousValue;
-  }
-}
-
-function updateReservationTotal() {
-  const form = $("#reservationForm");
-  const roomId = Number(form.elements.room.value);
-  const room = getRoom(roomId);
-  const checkin = form.elements.checkin.value;
-  const checkout = form.elements.checkout.value;
-
-  if (!room || !checkin || !checkout || checkout <= checkin) {
-    $("#reservationTotal").textContent = money(0);
-    $("#reservationNights").textContent =
-      "Seleciona um quarto e datas válidas.";
-    return;
-  }
-
-  const nights = Math.round(
-    (new Date(`${checkout}T12:00:00`) - new Date(`${checkin}T12:00:00`)) /
-      86400000,
-  );
-
-  $("#reservationTotal").textContent = money(nights * room.price);
-  $("#reservationNights").textContent =
-    `${nights} noite(s) × ${money(room.price)} por noite`;
-}
-
 function refresh() {
   renderDashboardRooms();
   renderAllRooms();
@@ -675,15 +639,12 @@ $("#guestSearch").addEventListener("input", renderGuests);
 $("#productSearch").addEventListener("input", renderProducts);
 $("#productCategoryFilter").addEventListener("change", renderProducts);
 
-$("#reservationRoom").addEventListener("change", updateReservationTotal);
 $("#checkinInput").addEventListener("change", () => {
   const checkout = $("#checkoutInput");
   if (!checkout.value || checkout.value <= $("#checkinInput").value) {
     checkout.value = addDays($("#checkinInput").value, 1);
   }
-  updateReservationTotal();
 });
-$("#checkoutInput").addEventListener("change", updateReservationTotal);
 
 $("#addRoomBtn").addEventListener("click", () => openModal("roomModal"));
 

@@ -17,12 +17,6 @@ class ReservasModels extends BaseModel
     'observacoes'
   ];
 
-  /**
-   * Regista uma reserva e associa um hóspede.
-   *
-   * Se o hóspede já existir, reutiliza o seu ID.
-   * Caso contrário, cria um novo hóspede.
-   */
   public function createReserva(array $dados, ?int $usuarioId = null): int
   {
     $nome = trim((string) ($dados['nome'] ?? ''));
@@ -80,17 +74,20 @@ class ReservasModels extends BaseModel
       // 1. Verificar o quarto
       $stmtQuarto = $this->db->prepare(
         'SELECT id, capacidade, preco, estado
-             FROM quartos
-             WHERE id = :id
-             FOR UPDATE'
+     FROM quartos
+     WHERE id = :id AND estado = :estado
+     FOR UPDATE'
       );
 
-      $stmtQuarto->execute(['id' => $quartoId]);
+      $stmtQuarto->execute([
+        'id' => $quartoId,
+        'estado' => 'disponivel'
+      ]);
 
       $quarto = $stmtQuarto->fetch(PDO::FETCH_ASSOC);
 
       if (!$quarto) {
-        throw new RuntimeException('O quarto selecionado não existe.');
+        throw new RuntimeException('O quarto selecionado esta ocupado.');
       }
 
       if ($quarto['estado'] === 'manutencao') {
@@ -131,11 +128,14 @@ class ReservasModels extends BaseModel
       $stmtHospede = $this->db->prepare(
         'SELECT id
              FROM hospedes
-             WHERE telefone = :telefone
+             WHERE telefone = :telefone OR documento = :documento
              LIMIT 1'
       );
 
-      $stmtHospede->execute(['telefone' => $telefone]);
+      $stmtHospede->execute([
+        'telefone' => $telefone,
+        'documento' => $documento
+      ]);
 
       $hospedeId = $stmtHospede->fetchColumn();
 
@@ -170,6 +170,8 @@ class ReservasModels extends BaseModel
         'estado' => 'pendente',
         'observacoes' => $observacoes
       ]);
+
+      $this->db->prepare('UPDATE quartos SET estado = :estado WHERE id = :id')->execute(['estado' => 'ocupado', 'id' => $quartoId]);
 
       $this->db->commit();
 

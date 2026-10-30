@@ -30,6 +30,7 @@ body {
   font-size: 14px;
 }
 
+textarea,
 button,
 input,
 select {
@@ -40,6 +41,7 @@ button {
   cursor: pointer;
 }
 
+textarea:focus-visible,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible {
@@ -685,11 +687,11 @@ p {
 }
 
 .room-tile.occupied {
-  border-color: #dce6fa;
-  background: #f2f6ff;
+  border-color: #ff0000;
+  background-color: #ff000067 !important;
 }
 
-.room-tile.maintenance {
+.room-tile.manutencao {
   border-color: #f5e4ca;
   background: #fff8ec;
 }
@@ -1162,11 +1164,24 @@ tbody tr:hover {
   font-weight: 650;
 }
 
+.form-grid textarea,
 .form-grid input,
 .form-grid select {
   width: 100%;
   min-width: 0;
   height: 43px;
+  padding: 0 12px;
+  border: 1px solid #dfe5ee;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.form-grid textarea {
+  width: 100%;
+  min-width: 0;
+  height: 120px;
   padding: 0 12px;
   border: 1px solid #dfe5ee;
   border-radius: 8px;
@@ -1228,6 +1243,11 @@ tbody tr:hover {
   background: #fff;
   box-shadow: 0 24px 90px #07132640;
   animation: appear .2s ease;
+}
+
+.modal.reserva {
+  width: min(100%, 1024px) !important;
+  scrollbar-width: none;
 }
 
 .modal-heading {
@@ -1447,6 +1467,8 @@ tbody tr:hover {
   .room-tile .room-number {
     font-size: 15px;
   }
+
+
 
   .room-legend {
     gap: 9px;

@@ -5,7 +5,7 @@
   ) ?>;
 </script>
 <script src="./assets/js/app.js"></script>
-<script type="module" src="./assets/js/test.js"></script>
+<script type="module" src="./assets/js/modalSteps.js"></script>
 </body>
 
 </html>

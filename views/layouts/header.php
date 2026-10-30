@@ -9,6 +9,7 @@
 
   <link rel="stylesheet" href="./assets/css/style.css" />
   <link rel="stylesheet" href="./assets/css/alert.css" />
+  <link rel="stylesheet" href="./assets/css/modalSteps.css" />
 </head>
 
 <body>

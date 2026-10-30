@@ -155,6 +155,7 @@ $andares = $andaresModel->findAllComTotalQuartos();
 
 $totalQuartos = $quartosModel->countAll();
 $totalDisponiveis = $quartosModel->countByEstado('disponivel');
+$quartosDisponiveis = $quartosModel->findByEstado('disponivel');
 $totalOcupados = $quartosModel->countByEstado('ocupado');
 $totalManutencao = $quartosModel->countByEstado('manutencao');
 
@@ -219,98 +220,235 @@ $dadosDashboard = [
   </main>
 </div>
 
+
 <!-- Modal de reserva -->
 <div class="modal-backdrop" id="reservationModal" aria-hidden="true">
-  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="reservationModalTitle">
+  <section class="modal reserva" role="dialog" aria-modal="true" aria-labelledby="reservationModalTitle">
+
     <div class="modal-heading">
       <div>
         <p class="eyebrow">ALOJAMENTO</p>
         <h2 id="reservationModalTitle">Nova reserva</h2>
       </div>
-      <button class="icon-button" data-close="reservationModal" aria-label="Fechar">
-        ✕
-      </button>
+
+      <button class="icon-button" data-close="reservationModal" aria-label="Fechar">✕</button>
     </div>
+
     <form method="POST" action="" id="reservationForm" class="form-grid">
 
       <input type="hidden" name="acao" value="reserva">
-
       <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
 
-      <label>
-        Nome do hóspede
-        <input type="text" name="dados[nome]" required maxlength="120" placeholder="Nome completo">
-      </label>
+      <!-- Progresso -->
+      <div class="step-progress full-field">
+        <div class="step-progress-info">
+          <span id="stepLabel">Etapa 1 de 4</span>
+          <span id="stepPercent">25%</span>
+        </div>
 
-      <label>
-        Telefone
-        <input type="tel" name="dados[telefone]" required maxlength="30" placeholder="+244 ...">
-      </label>
+        <div class="progress-track">
+          <div id="progressBar"></div>
+        </div>
 
-      <label>
-        Email
-        <input type="email" name="dados[email]" maxlength="150">
-      </label>
-
-      <label>
-        Documento
-        <input type="text" name="dados[documento]" maxlength="50">
-      </label>
-
-      <label>
-        Quarto
-        <select name="dados[quarto_id]" id="reservationRoom" required>
-          <option value="">Seleciona um quarto</option>
-
-          <?php foreach ($quartos as $quarto): ?>
-            <?php if ($quarto['estado'] !== 'manutencao'): ?>
-
-              <option value="<?= (int) $quarto['id'] ?>">
-                Quarto <?= htmlspecialchars((string) $quarto['numero']) ?>
-                - <?= htmlspecialchars((string) $quarto['tipo']) ?>
-              </option>
-
-            <?php endif; ?>
-          <?php endforeach; ?>
-
-        </select>
-      </label>
-
-      <label>
-        Número de hóspedes
-        <input type="number" name="dados[quantidade_pessoas]" min="1" value="1" required>
-      </label>
-
-      <label>
-        Data de entrada
-        <input type="date" name="dados[data_entrada]" id="checkinInput" required>
-      </label>
-
-      <label>
-        Data de saída
-        <input type="date" name="dados[data_saida]" id="checkoutInput" required>
-      </label>
-
-      <label class="full-field">
-        Observações
-        <textarea name="dados[observacoes]" rows="3" placeholder="Observações sobre a reserva"></textarea>
-      </label>
-
-      <div class="reservation-summary full-field">
-        <span>Valor estimado</span>
-        <strong id="reservationTotal">0 Kz</strong>
-        <small id="reservationNights">
-          Seleciona as datas e o quarto.
-        </small>
+        <div class="step-indicators">
+          <span class="step-dot active">1</span>
+          <span class="step-dot">2</span>
+          <span class="step-dot">3</span>
+          <span class="step-dot">4</span>
+        </div>
       </div>
 
+      <!-- ETAPA 1: Dados do hóspede -->
+      <div class="form-step active full-field" data-step="1">
+
+        <div class="step-heading">
+          <h3>Dados do hóspede</h3>
+          <p>Começa por preencher os dados pessoais do hóspede.</p>
+        </div>
+
+        <label>
+          Nome do hóspede
+          <input type="text" name="dados[nome]" maxlength="120" required placeholder="Nome completo">
+        </label>
+
+        <label>
+          Telefone
+          <input type="tel" name="dados[telefone]" required maxlength="30" placeholder="+244 ...">
+        </label>
+
+        <label>
+          Email
+          <input type="email" name="dados[email]" maxlength="150">
+        </label>
+
+        <label>
+          Documento
+          <input type="text" name="dados[documento]" maxlength="50">
+        </label>
+
+      </div>
+
+      <!-- ETAPA 2: Hospedagem -->
+      <div class="form-step full-field" data-step="2">
+
+        <div class="step-heading">
+          <h3>Detalhes da hospedagem</h3>
+          <p>Indica quantas pessoas ficarão hospedadas.</p>
+        </div>
+
+        <label>
+          Número de hóspedes
+          <input type="number" name="dados[quantidade_pessoas]" min="1" value="1" required>
+        </label>
+
+        <label>
+          Observações
+          <textarea name="dados[observacoes]" rows="4" placeholder="Pedidos especiais ou outras informações"></textarea>
+        </label>
+
+      </div>
+
+      <!-- ETAPA 3: Quarto e datas -->
+      <div class="form-step full-field" data-step="3">
+
+        <div class="step-heading">
+          <h3>Quarto e período</h3>
+          <p>Seleciona o quarto e define as datas da hospedagem.</p>
+        </div>
+
+        <label>
+          Data de entrada
+          <input type="date" name="dados[data_entrada]" id="checkinInput" required>
+        </label>
+
+        <label>
+          Data de saída
+          <input type="date" name="dados[data_saida]" id="checkoutInput" required>
+        </label>
+
+
+        <div class="full-field">
+          <label>Escolhe o teu quarto</label>
+
+          <div class="rooms-grid" id="roomsGrid">
+
+
+<?php foreach ($quartos as $quarto): ?>
+
+    <label class="room-card <?= $quarto['estado'] === 'ocupado' ? 'room-occupied' : '' ?>">
+
+        <input
+            type="radio"
+            name="dados[quarto_id]"
+            value="<?= (int) $quarto['id'] ?>"
+            data-preco="<?= htmlspecialchars((string) $quarto['preco']) ?>"
+            data-capacidade="<?= (int) $quarto['capacidade'] ?>"
+           <?= $quarto['estado'] !== 'disponivel' ? 'disabled' : '' ?>
+            required
+        >
+
+        <div class="room-card-content">
+
+            <div class="room-card-header">
+
+                <span class="room-number">
+                    Quarto <?= htmlspecialchars((string) $quarto['numero']) ?>
+                </span>
+
+                <?php if ($quarto['estado'] === 'ocupado'): ?>
+                    <span class="room-status occupied">Ocupado</span>
+                <?php else: ?>
+                    <span class="room-check">✓</span>
+                <?php endif; ?>
+
+            </div>
+
+            <h4>
+                <?= htmlspecialchars((string) $quarto['tipo']) ?>
+            </h4>
+
+            <div class="room-info">
+                <span>👥 <?= (int) $quarto['capacidade'] ?> Camas</span>
+            </div>
+
+            <div class="room-price">
+                <?= number_format((float) $quarto['preco'], 2, ',', '.') ?>
+                <small>Kz / noite</small>
+            </div>
+
+        </div>
+
+    </label>
+
+<?php endforeach; ?>
+
+          </div>
+        </div>
+
+
+      </div>
+
+      <!-- ETAPA 4: Confirmação -->
+      <div class="form-step full-field" data-step="4">
+
+        <div class="step-heading">
+          <h3>Confirmar reserva</h3>
+          <p>Verifica os dados antes de registar a reserva.</p>
+        </div>
+
+        <div class="reservation-summary">
+
+          <div>
+            <span>Hóspede</span>
+            <strong id="summaryGuest">-</strong>
+          </div>
+
+          <div>
+            <span>Quarto</span>
+            <strong id="summaryRoom">-</strong>
+          </div>
+
+          <div>
+            <span>Número de hóspedes</span>
+            <strong id="summaryPeople">-</strong>
+          </div>
+
+          <div>
+            <span>Entrada</span>
+            <strong id="summaryCheckin">-</strong>
+          </div>
+
+          <div>
+            <span>Saída</span>
+            <strong id="summaryCheckout">-</strong>
+          </div>
+
+          <div>
+            <span>Tempo de hospedagem</span>
+            <strong id="reservationNights">0 noites</strong>
+          </div>
+
+          <div class="summary-total">
+            <span>Valor total estimado</span>
+            <strong id="reservationTotal">0 Kz</strong>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Navegação -->
       <div class="modal-actions full-field">
 
-        <button type="button" class="btn btn-outline" data-close="reservationModal">
-          Cancelar
+        <button type="button" class="btn btn-outline" id="prevStep" hidden>
+          Voltar
         </button>
 
-        <button type="submit" class="btn btn-primary">
+        <button type="button" class="btn btn-primary" id="nextStep">
+          Continuar
+        </button>
+
+        <button type="submit" class="btn btn-primary" id="submitReservation" hidden>
           Registar reserva
         </button>
 
