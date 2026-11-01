@@ -13,17 +13,26 @@
   </div>
 
   <div class="filter-bar">
-    <input class="search-input" id="reservationSearch" placeholder="⌕  Procurar hóspede ou quarto..." />
-    <select id="reservationStatusFilter" aria-label="Filtrar reservas">
-      <option value="todas">Todos os estados</option>
-      <option value="Confirmada">Confirmada</option>
-      <option value="Pendente">Pendente</option>
-      <option value="Check-in">Check-in</option>
-      <option value="Concluída">Concluída</option>
-      <option value="Cancelada">Cancelada</option>
-    </select>
-  </div>
 
+    <select id="reservationFilter" class="search-input" aria-label="Filtrar reservas">
+
+      <option value="aallld">Todas as reservas</option>
+
+      <?php foreach ($reservas as $reserva): ?>
+
+        <option value="<?= (int) $reserva['id'] ?>">
+
+          <?= htmlspecialchars($reserva['hospede_nome']) ?>
+          - Quarto <?= htmlspecialchars($reserva['quarto_numero']) ?>
+          - <?= htmlspecialchars($reserva['quarto_tipo']) ?>
+
+        </option>
+
+      <?php endforeach; ?>
+
+    </select>
+
+  </div>
   <section class="panel">
     <div class="table-scroll">
       <table>

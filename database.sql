@@ -4,7 +4,35 @@ SET
 
 USE hotelaria;
 
--- 1. Utilizadores do sistema
+CREATE TABLE
+  IF NOT EXISTS sistema (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    cargo ENUM ('admin', 'oprerador') NOT NULL DEFAULT 'opreador',
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+CREATE TABLE
+  IF NOT EXISTS hoteis (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    enderco VARCHAR(255) NOT NULL,
+    telefone VARCHAR(100),
+    telefone_two VARCHAR(100),
+    nif VARCHAR(100),
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+CREATE TABLE
+  IF NOT EXISTS cliente (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+  -- 1. Utilizadores do sistema
 CREATE TABLE
   IF NOT EXISTS usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -13,14 +41,18 @@ CREATE TABLE
     senha VARCHAR(255) NOT NULL,
     cargo ENUM ('admin', 'recepcionista', 'gerente') NOT NULL DEFAULT 'recepcionista',
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    hotel_id INT NOT NULL,
+    FOREIGN KEY (hotel_id) REFERENCES hoteis (id)
   ) ENGINE = InnoDB;
 
 CREATE TABLE
   IF NOT EXISTS andares (
     id INT AUTO_INCREMENT PRIMARY KEY,
     numero_andar INT NOT NULL UNIQUE,
-    descricao TEXT
+    descricao TEXT,
+    hotel_id INT NOT NULL,
+    FOREIGN KEY (hotel_id) REFERENCES hoteis (id)
   ) ENGINE = InnoDB;
 
 -- 2. Quartos do hotel
@@ -35,6 +67,8 @@ CREATE TABLE
     estado ENUM ('disponivel', 'ocupado', 'manutencao') NOT NULL DEFAULT 'disponivel',
     descricao TEXT,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    hotel_id INT NOT NULL,
+    FOREIGN KEY (hotel_id) REFERENCES hoteis (id),
     CONSTRAINT chk_quarto_preco CHECK (preco >= 0),
     CONSTRAINT chk_quarto_capacidade CHECK (capacidade > 0)
   ) ENGINE = InnoDB;
@@ -47,6 +81,7 @@ CREATE TABLE
     telefone VARCHAR(30),
     email VARCHAR(150),
     documento VARCHAR(50) UNIQUE,
+    senha VARCHAR(255) NOT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   ) ENGINE = InnoDB;
 
@@ -62,6 +97,8 @@ CREATE TABLE
     estado ENUM ('disponivel', 'ocupado', 'manutencao') NOT NULL DEFAULT 'disponivel',
     descricao TEXT,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    hotel_id INT NOT NULL,
+    FOREIGN KEY (hotel_id) REFERENCES hoteis (id),
     CONSTRAINT fk_quarto_andar FOREIGN KEY (andar_id) REFERENCES andares (id) ON DELETE SET NULL,
     CONSTRAINT chk_quarto_preco CHECK (preco >= 0),
     CONSTRAINT chk_quarto_capacidade CHECK (capacidade > 0)
@@ -86,6 +123,8 @@ CREATE TABLE
     ) NOT NULL DEFAULT 'pendente',
     observacoes TEXT,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    hotel_id INT NOT NULL,
+    FOREIGN KEY (hotel_id) REFERENCES hoteis (id),
     CONSTRAINT fk_reserva_hospede FOREIGN KEY (hospede_id) REFERENCES hospedes (id),
     CONSTRAINT fk_reserva_quarto FOREIGN KEY (quarto_id) REFERENCES quartos (id),
     CONSTRAINT fk_reserva_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE SET NULL,
@@ -103,7 +142,9 @@ CREATE TABLE
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(80) NOT NULL UNIQUE,
     descricao TEXT,
-    ativo BOOLEAN NOT NULL DEFAULT TRUE
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    hotel_id INT NOT NULL,
+    FOREIGN KEY (hotel_id) REFERENCES hoteis (id)
   ) ENGINE = InnoDB;
 
 -- 6. Pratos e bebidas
@@ -117,6 +158,8 @@ CREATE TABLE
     tipo ENUM ('prato', 'bebida', 'sobremesa', 'outro') NOT NULL DEFAULT 'prato',
     disponivel BOOLEAN NOT NULL DEFAULT TRUE,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    hotel_id INT NOT NULL,
+    FOREIGN KEY (hotel_id) REFERENCES hoteis (id),
     CONSTRAINT fk_produto_categoria FOREIGN KEY (categoria_id) REFERENCES categorias_menu (id),
     CONSTRAINT chk_produto_preco CHECK (preco >= 0),
     INDEX idx_produto_categoria (categoria_id)
@@ -140,6 +183,8 @@ CREATE TABLE
     ) NOT NULL DEFAULT 'pendente',
     observacoes TEXT,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    hotel_id INT NOT NULL,
+    FOREIGN KEY (hotel_id) REFERENCES hoteis (id),
     CONSTRAINT fk_pedido_hospede FOREIGN KEY (hospede_id) REFERENCES hospedes (id) ON DELETE SET NULL,
     CONSTRAINT fk_pedido_reserva FOREIGN KEY (reserva_id) REFERENCES reservas (id) ON DELETE SET NULL,
     CONSTRAINT fk_pedido_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE SET NULL,
@@ -156,6 +201,8 @@ CREATE TABLE
     nome_produto VARCHAR(120) NOT NULL,
     quantidade INT NOT NULL DEFAULT 1,
     preco_unitario DECIMAL(12, 2) NOT NULL,
+    hotel_id INT NOT NULL,
+    FOREIGN KEY (hotel_id) REFERENCES hoteis (id),
     CONSTRAINT fk_item_pedido FOREIGN KEY (pedido_id) REFERENCES pedidos (id) ON DELETE CASCADE,
     CONSTRAINT fk_item_produto FOREIGN KEY (produto_id) REFERENCES produtos_menu (id) ON DELETE SET NULL,
     CONSTRAINT chk_item_quantidade CHECK (quantidade > 0),

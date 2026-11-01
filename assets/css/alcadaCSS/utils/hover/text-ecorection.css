@@ -1,0 +1,15 @@
+.hover\:underline {
+  &:hover {
+    @media (hover: hover) {
+      text-decoration-line: underline;
+    }
+  }
+}
+
+.hover\:underline-offset-0 {
+  &:hover {
+    @media (hover: hover) {
+      text-underline-offset: 0px;
+    }
+  }
+}

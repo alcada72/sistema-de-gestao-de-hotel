@@ -1,0 +1,190 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root {
+  /* COLORS */
+  --bg-color: #ffffff;
+  --fore-color: #222222;
+
+  --primary-color: #172b4d;
+  --primary-color-hover: #1d7fd6;
+
+  --secondary-color: #7c3aed;
+  --success-color: #22c55e;
+  --warning-color: #facc15;
+  --danger-color: #ef4444;
+  --info-color: #0ea5e9;
+
+  --brand-color-primary: #4c3f96;
+  --brand-color-secondary: #1a69fc;
+
+  --brand-gradient: linear-gradient(90deg,
+      #1a69fc 0%,
+      #4c3f96 100%);
+
+  --text-color-primary: #f4f4f5;
+  --text-color-secondary: #646464;
+  --text-color-muted: #a1a1aa;
+
+  --border-color: #e4e4e7;
+
+  /* TYPOGRAPHY */
+  --ff-sans: "Inter", sans-serif;
+  --ff-mono: "Fira Code", monospace;
+
+  --fs-xs: .75rem;
+  --fs-sm: .875rem;
+  --fs-2xl: clamp(2rem, 5vw, 4rem);
+  --fs-3xl: clamp(3rem, 8vw, 6rem);
+  --fs-sm: clamp(.8rem, 1vw, .9rem);
+
+  --fs-base: clamp(1rem,
+      1.2vw,
+      1.125rem);
+
+  --fs-lg: clamp(1.25rem,
+      2vw,
+      2rem);
+
+  --fs-xl: clamp(1.5rem,
+      4vw,
+      3rem);
+
+  --fs-2xl: clamp(2rem,
+      5vw,
+      4rem);
+
+  --fs-3xl: clamp(3rem,
+      8vw,
+      6rem);
+
+  --fw-light: 300;
+  --fw-base: 400;
+  --fw-md: 500;
+  --fw-semibold: 600;
+  --fw-bold: 800;
+
+  --line-height-sm: 1.2;
+  --line-height-base: 1.5;
+  --line-height-lg: 1.8;
+
+
+
+  /* SHADOWS */
+  --shadow-sm:
+    0 1px 2px rgb(0 0 0 / 0.05);
+
+  --shadow-md:
+    0 4px 6px rgb(0 0 0 / 0.1);
+
+  --shadow-lg:
+    0 10px 15px rgb(0 0 0 / 0.15);
+
+  --shadow-xl:
+    0 20px 25px rgb(0 0 0 / 0.2);
+
+  /* BORDERS */
+  --border-width-sm: 1px;
+  --border-width-md: 2px;
+  --border-width-lg: 4px;
+
+  /* TRANSITIONS */
+  --transition-fast: .15s ease;
+  --transition-base: .25s ease;
+  --transition-slow: .4s ease;
+
+  /* OPACITY */
+  --opacity-disabled: .5;
+  --opacity-muted: .75;
+
+  /* Z-INDEX */
+  --z-base: 1;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal: 1040;
+  --z-popover: 1050;
+  --z-tooltip: 1060;
+
+  /* LAYOUT */
+  --container-sm: 40rem;
+  --container-md: 48rem;
+  --container-lg: 64rem;
+  --container-xl: 80rem;
+
+  --header-height: 4rem;
+
+  /* BREAKPOINTS */
+  --breakpoint-sm: 40rem;
+  /* 640px */
+  --breakpoint-md: 48rem;
+  /* 768px */
+  --breakpoint-lg: 64rem;
+  /* 1024px */
+  --breakpoint-xl: 80rem;
+  /* 1280px */
+
+  /* BLUR */
+  --blur-sm: 4px;
+  --blur-md: 8px;
+  --blur-lg: 16px;
+
+  /* SCALE */
+  --scale-hover: 1.03;
+  --scale-active: .98;
+
+  /* ANIMATIONS */
+  --animation-fast: 150ms;
+  --animation-base: 300ms;
+  --animation-slow: 500ms;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+img,
+picture {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  outline: none;
+}
+
+ol,
+ul,
+li,
+a {
+  text-decoration: none;
+  list-style-type: none;
+  color: inherit;
+}
+
+.container {
+  width: min(100% - 2rem, var(--container-xl));
+  margin-inline: auto;
+}
+
+@media (min-width: 80rem) {
+  :root {
+    --fs-2xl: 4rem;
+    --fs-xl: 3rem;
+    --fs-lg: 2rem;
+  }
+}

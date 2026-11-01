@@ -420,18 +420,16 @@ function reservationRow(reservation, withActions = false) {
 }
 
 function renderReservations() {
-  const query = $("#reservationSearch").value.trim().toLowerCase();
-  const status = $("#reservationStatusFilter").value;
+  const reservaId = $("#reservationFilter").value;
 
   const filtered = reservations.filter((reservation) => {
-    const guest = getGuest(reservation.guestId);
-    const room = getRoom(reservation.roomId);
-    const text = `${guest?.name || ""} ${room?.number || ""}`.toLowerCase();
+    // Sem seleção: apresentar todas as reservas
+    if (!reservaId) {
+      return true;
+    }
 
-    return (
-      text.includes(query) &&
-      (status === "todas" || reservation.status === status)
-    );
+    // Filtrar pela reserva selecionada
+    return String(reservation.id) === String(reservaId);
   });
 
   $("#allReservations").innerHTML = filtered.length
@@ -439,6 +437,7 @@ function renderReservations() {
     : '<tr><td colspan="7" class="empty-state">Nenhuma reserva encontrada.</td></tr>';
 
   const recent = [...reservations].reverse().slice(0, 5);
+
   $("#recentReservations").innerHTML = recent.length
     ? recent.map((reservation) => reservationRow(reservation)).join("")
     : '<tr><td colspan="6">Ainda não existem reservas.</td></tr>';
@@ -554,7 +553,7 @@ function renderReports() {
     .join("");
 }
 
-function updateStats() {
+/* function updateStats() {
   const available = rooms.filter((room) => room.status === "disponivel").length;
   const occupied = rooms.filter((room) => room.status === "ocupado").length;
 
@@ -571,7 +570,7 @@ function updateStats() {
 
   $("#dailyRevenue").textContent = money(revenue);
   $(".nav-count").textContent = rooms.length;
-}
+} */
 
 function refresh() {
   renderDashboardRooms();
@@ -582,7 +581,7 @@ function refresh() {
   renderOrders();
   renderActivities();
   renderReports();
-  updateStats();
+  /*   updateStats(); */
 }
 
 function resetForm(form) {
@@ -632,8 +631,7 @@ $("#roomSearch").addEventListener("input", renderAllRooms);
 $("#roomTypeFilter").addEventListener("change", renderAllRooms);
 $("#roomStatusFilter").addEventListener("change", renderAllRooms);
 
-$("#reservationSearch").addEventListener("input", renderReservations);
-$("#reservationStatusFilter").addEventListener("change", renderReservations);
+$("#reservationFilter").addEventListener("change", renderReservations);
 
 $("#guestSearch").addEventListener("input", renderGuests);
 $("#productSearch").addEventListener("input", renderProducts);

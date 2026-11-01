@@ -31,13 +31,13 @@
     <?php foreach ($quartos as $quarto): ?>
 
       <article role="button" tabindex="0" data-room-detail="<?= htmlspecialchars($quarto['id']) ?>" class="room-tile 
-
             <?= htmlspecialchars($quarto['estado']) == 'ocupado' ? 'room-occupied' : '' ?>
             <?= htmlspecialchars($quarto['estado']) == 'manutencao' ? 'room-maintenance' : '' ?>">
 
         <?php if ($quarto['tipo'] === 'vip'): ?>
           <span class="vip-tag">VIP</span>
         <?php endif; ?>
+
 
         <span class="room-number">
           Quarto <?= htmlspecialchars($quarto['numero']) ?>

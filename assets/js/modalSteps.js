@@ -162,6 +162,4 @@ function atualizarResumo() {
 checkinInput.addEventListener("change", atualizarResumo);
 checkoutInput.addEventListener("change", atualizarResumo);
 
-console.log(document.querySelectorAll(".room-tile"));
-
 showStep(1);

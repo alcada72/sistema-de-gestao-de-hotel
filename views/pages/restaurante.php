@@ -12,14 +12,14 @@
     </button>
   </div>
 
-  <div class="restaurant-banner">
+  <!--   <div class="restaurant-banner">
     <div>
       <span class="restaurant-tag">HOTELIER · RESTAURANTE</span>
       <h2>Sabores que fazem a diferença.</h2>
       <p>Organiza os pratos e as bebidas disponíveis no teu hotel.</p>
     </div>
     <div class="restaurant-decoration">♨</div>
-  </div>
+  </div> -->
 
   <div class="filter-bar">
     <input class="search-input" id="productSearch" placeholder="⌕  Procurar prato ou bebida..." />

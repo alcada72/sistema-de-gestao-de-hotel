@@ -25,7 +25,9 @@
             <th>DOCUMENTO</th>
           </tr>
         </thead>
-        <tbody id="guestsTable"></tbody>
+        <tbody id="guestsTable">
+
+        </tbody>
       </table>
     </div>
   </section>
