@@ -1,0 +1,47 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  min-height: 100dvh;
+  min-width: 100dvw;
+  z-index: 50;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  background: #0e1b30a8;
+  backdrop-filter: blur(3px);
+}
+
+.modal-backdrop.open {
+  display: flex;
+}
+
+.modal {
+  width: min(100%, 560px);
+  max-height: calc(100vh - 40px);
+  padding: 26px;
+  overflow-y: auto;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 90px #07132640;
+  animation: appear .2s ease;
+}
+
+.modal.reserva {
+  width: min(100%, 1024px) !important;
+  scrollbar-width: none;
+}
+
+.modal-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.modal-heading h2 {
+  margin-bottom: 0;
+  font-size: 21px;
+}

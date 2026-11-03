@@ -1,0 +1,96 @@
+textarea,
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  outline: none;
+  border: none;
+  background: none;
+}
+
+.icon-button {
+  position: relative;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+  font-size: 17px;
+}
+
+.icon-button:hover {
+  color: red;
+  border: 1px solid var(--red);
+  transition: all 0.2s ease-in-out;
+  transform: scale(1.5) rotate(10deg);
+}
+
+textarea:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid #8bb4ff;
+  outline-offset: 2px;
+}
+
+.btn {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 650;
+  transition: .2s ease;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-outline {
+  border: 1px solid var(--primary);
+  color: var(--primary);
+}
+
+.btn-logout {
+  color: #dc2626;
+}
+
+.btn.full-width {
+  width: 100%;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.modal-actions .col {
+  flex-direction: column;
+}
+
+@media (max-width: 380px) {
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
+}

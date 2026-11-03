@@ -2,7 +2,7 @@
 require_once __DIR__ . '/config/auth.php';
 
 if (isLoggedIn()) {
-  header('Location: ' . BASE_URL . '/app.php');
+  header('Location: ' . BASE_URL . '/route.php');
   exit;
 }
 
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       $user = login($email, $password);
 
       if ($user) {
-        header('Location: ' . BASE_URL . '/app.php');
+        header('Location: ' . BASE_URL . '/route.php');
         exit;
       } else {
         $error = 'Email ou palavra-passe incorretos.';
@@ -30,8 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 ?>
 
-
-
 <!doctype html>
 <html lang="pt">
 
@@ -40,7 +38,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login</title>
   <link rel="stylesheet" href="./assets/css/style.css" />
-  <link rel="stylesheet" href="./assets/css/login.css" />
+  <style>
+    #productLogin {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 390px;
+      padding: 30px;
+      border-radius: 25px;
+    }
+
+    .main-login {
+      width: 100%;
+      height: 100%;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .main-login button {
+      width: 100%;
+    }
+  </style>
 </head>
 
 <body>
@@ -70,6 +90,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       <div class="modal-actions full-field">
         <button type="submit" class="btn btn-primary">Entar</button>
       </div>
+
+      <p>
+        Nao tem uma conta?
+        <a href="<?= BASE_URL ?>/register.php">Criar conta</a>
+      </p>
     </form>
   </main>
 </body>
