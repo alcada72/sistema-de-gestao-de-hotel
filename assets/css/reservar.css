@@ -294,6 +294,307 @@ body {
   margin: 15px 0;
 }
 
+/* =====================================
+   FILTRO DE ANDARES
+===================================== */
+
+.room-filters {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: 28px 0;
+}
+
+.floor-select-group {
+  width: 100%;
+  max-width: 300px;
+}
+
+.floor-select-group label {
+  display: block;
+  margin-bottom: 9px;
+  color: #344054;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.floor-select {
+  width: 100%;
+  min-height: 50px;
+  padding: 0 46px 0 16px;
+  border: 1px solid #d0d5dd;
+  border-radius: 12px;
+  background-color: #fff;
+  color: #101828;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: .2s ease;
+}
+
+.floor-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+}
+
+/* =====================================
+   LEGENDA
+===================================== */
+
+.room-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding-bottom: 12px;
+}
+
+.room-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #475467;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-dot.available {
+  background: #16a34a;
+}
+
+.legend-dot.occupied {
+  background: #dc2626;
+}
+
+/* =====================================
+   GRELHA DE QUARTOS
+===================================== */
+
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.room-option {
+  display: block;
+  position: relative;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.room-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Cartão */
+
+.room-content {
+  height: 100%;
+  padding: 18px;
+  border: 1px solid #e4e7ec;
+  border-radius: 16px;
+  background: #fff;
+  transition: .2s ease;
+}
+
+/* Cabeçalho */
+
+.room-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.room-category {
+  color: #475467;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.room-status {
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* =====================================
+   QUARTOS DISPONÍVEIS
+===================================== */
+
+.room-available .room-content {
+  border-color: #bbf7d0;
+  background: #ffffff;
+}
+
+.room-available .room-status {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.room-available:hover .room-content {
+  border-color: #16a34a;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, .09);
+  transform: translateY(-2px);
+}
+
+.room-available input:checked+.room-content {
+  border: 2px solid #16a34a;
+  padding: 17px;
+  background: #f0fdf4;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, .10);
+}
+
+/* =====================================
+   QUARTOS OCUPADOS
+===================================== */
+
+.room-occupied {
+  cursor: not-allowed;
+}
+
+.room-occupied .room-content {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  cursor: not-allowed;
+}
+
+.room-occupied .room-category,
+.room-occupied .room-content h3,
+.room-occupied .room-description,
+.room-occupied .room-capacity {
+  color: #991b1b;
+}
+
+.room-occupied .room-status {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.room-occupied .room-price {
+  border-color: #fecaca;
+}
+
+.room-occupied .room-price strong,
+.room-occupied .room-price span {
+  color: #b91c1c;
+}
+
+/* =====================================
+   INFORMAÇÕES DO QUARTO
+===================================== */
+
+.room-check {
+  display: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #fff;
+  text-align: center;
+  line-height: 20px;
+  font-size: 13px;
+}
+
+.room-available input:checked+.room-content .room-check {
+  display: block;
+}
+
+.room-content h3 {
+  margin: 0 0 10px;
+  color: #101828;
+  font-size: 19px;
+}
+
+.room-description {
+  min-height: 40px;
+  margin-bottom: 16px;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.room-capacity {
+  margin-bottom: 16px;
+  color: #475467;
+  font-size: 13px;
+}
+
+.room-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  border-top: 1px solid #eaecf0;
+  padding-top: 14px;
+}
+
+.room-price strong {
+  color: #101828;
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.room-price span {
+  color: #667085;
+  font-size: 12px;
+}
+
+/* Mensagens */
+
+.no-floor-rooms,
+.availability-empty {
+  padding: 36px 20px;
+  border: 1px dashed #d0d5dd;
+  border-radius: 16px;
+  background: #f9fafb;
+  color: #667085;
+  text-align: center;
+}
+
+.availability-empty h3 {
+  margin-bottom: 8px;
+  color: #101828;
+}
+
+.availability-empty p {
+  max-width: 420px;
+  margin: 0 auto;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .room-filters {
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .floor-select-group {
+    max-width: none;
+  }
+
+  .room-legend {
+    padding-bottom: 0;
+  }
+}
+
+
 .room-price {
   display: flex;
   align-items: baseline;

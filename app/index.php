@@ -10,8 +10,8 @@ $usuario = getCurrentUser();
 
 $hotel = requireHotelAccess(
   isset($_GET['hotel_id'])
-  ? (int) $_GET['hotel_id']
-  : null
+    ? (int) $_GET['hotel_id']
+    : null
 );
 
 $hotelSelecionado = $hotel;
@@ -352,7 +352,6 @@ $stmt = $pdo->prepare("
 $stmt->execute([$hotelId]);
 $estatisticasReservas = $stmt->fetch(PDO::FETCH_ASSOC);
 
-
 // ======================================
 // LISTAGEM DE FUNCIONÁRIOS
 // ======================================
@@ -378,11 +377,9 @@ $stmt = $pdo->prepare("
 $stmt->execute([$hotelId]);
 $listaFuncionarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-
 // ======================================
 // ESTATÍSTICAS DOS FUNCIONÁRIOS
 // ======================================
-
 $stmt = $pdo->prepare("
     SELECT
         COUNT(*) AS total,
@@ -397,8 +394,15 @@ $stmt = $pdo->prepare("
 $stmt->execute([$hotelId]);
 $estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
 
-?>
+$general_data = [
+  "funcionarios" => $listaFuncionarios,
+  "reservas" => $listaReservas,
+  "hoteis" => $hoteis,
+  "imagens" => $imagensHotel,
+  "servicos" => $servicos,
+]
 
+?>
 
 <!DOCTYPE html>
 <html lang="pt-AO">
@@ -417,126 +421,8 @@ $estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
 <body>
 
   <div class="dashboard">
-
     <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-
-      <div class="brand">
-        <span>MultiploHotel</span>
-      </div>
-
-      <div class="hotel-selector">
-
-        <label>Estabelecimento</label>
-
-        <select onchange="selecionarHotel(this.value)">
-
-          <?php foreach ($hoteis as $hotel): ?>
-
-            <option value="<?= (int) $hotel['id'] ?>" <?= (int) $hotel['id'] === $hotelId ? 'selected' : '' ?>>
-              <?= htmlspecialchars($hotel['nome']) ?>
-            </option>
-
-          <?php endforeach; ?>
-
-        </select>
-
-      </div>
-
-      <nav class="navigation">
-
-        <span class="nav-label">PRINCIPAL</span>
-
-        <button class="nav-link active" data-page="dashboard">
-          <span>▦</span> Visão geral
-        </button>
-
-        <span class="nav-label">ALOJAMENTO</span>
-
-        <?php if ($podeGerirQuartos): ?>
-
-          <button class="nav-link" data-page="quartos">
-            <span>▣</span> Quartos
-          </button>
-
-        <?php endif; ?>
-
-        <button class="nav-link" data-page="andares">
-          <span>▤</span> Andares
-        </button>
-
-        <button class="nav-link" data-page="categorias">
-          <span>▧</span> Categorias
-        </button>
-
-        <button class="nav-link" data-page="imagens">
-          <span>▧</span> Fotografias
-        </button>
-
-        <span class="nav-label">OPERAÇÕES</span>
-
-        <button class="nav-link" data-page="reservas">
-          <span>▣</span> Reservas
-        </button>
-
-        <button class="nav-link" data-page="reserva-presencial">
-          <span>＋</span> Reserva presencial
-        </button>
-
-        <button class="nav-link" data-page="servicos">
-          <span>✧</span> Serviços
-        </button>
-
-        <button class="nav-link" data-page="restaurante">
-          <span>♨</span> Restaurante
-        </button>
-
-        <span class="nav-label">GESTÃO</span>
-
-        <?php if ($podeGerirFuncionarios): ?>
-
-          <button class="nav-link" data-page="funcionarios">
-            <span>♙</span> Funcionários
-          </button>
-
-        <?php endif; ?>
-
-        <?php if ($podeGerirHotel): ?>
-
-          <button class="nav-link" data-page="hotel">
-            <span>⚙</span> Dados do hotel
-          </button>
-
-        <?php endif; ?>
-
-      </nav>
-
-      <div class="sidebar-footer">
-
-        <div class="user-info">
-          <div class="avatar">
-            <?= strtoupper(substr($usuario['nome'], 0, 1)) ?>
-          </div>
-
-          <div>
-            <strong>
-              <?= htmlspecialchars($usuario['nome']) ?>
-            </strong>
-
-            <small>
-              <?= htmlspecialchars(ucfirst($cargo)) ?>
-            </small>
-          </div>
-        </div>
-
-        <button class="logout btn" onclick="location.href='<?= BASE_URL ?>/logout.php'">
-          Sair da conta
-        </button>
-
-      </div>
-
-    </aside>
-
+    <?php require_once  __DIR__ . '/views/layouts/menu.php';  ?>
 
     <!-- Conteúdo principal -->
     <main class="main-content">
@@ -1276,17 +1162,16 @@ $estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
               <h2>Lista de reservas</h2>
               <p>Consulta os dados das reservas registadas.</p>
             </div>
-            <div class="toolbar-actions">
-              <input type="search" class="form-control" placeholder="Código ou hóspede...">
-              <select class="form-control">
-                <option value="">Todos os estados</option>
-                <option>Pendente</option>
-                <option>Confirmada</option>
-                <option>Check-in</option>
-                <option>Concluída</option>
-                <option>Cancelada</option>
-              </select>
-            </div>
+            <select class="form-control full-width " id="selectReserva">
+              <option value="">Selecione Uma reserva </option>
+              <?php foreach ($listaReservas as $reserva): ?>
+
+                <option value="<?= $reserva['codigo']  ?>">
+                  <?= $reserva['codigo']  ?> - <?= $reserva['nome_utilizador']  ?> - Quarto <?= $reserva['numero_quarto'] ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+
           </div>
 
           <div class="table-wrapper">
@@ -1303,82 +1188,7 @@ $estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
                   <th>Ações</th>
                 </tr>
               </thead>
-              <tbody>
-
-                <?php if (empty($listaReservas)): ?>
-
-                  <tr>
-                    <td colspan="8">Ainda não existem reservas.</td>
-                  </tr>
-
-                <?php else: ?>
-
-                  <?php foreach ($listaReservas as $reserva): ?>
-
-                    <?php
-                    $estados = [
-                      'pendente' => ['Pendente', 'warning'],
-                      'confirmada' => ['Confirmada', 'success'],
-                      'checkin' => ['Check-in', 'info'],
-                      'concluida' => ['Concluída', 'success'],
-                      'cancelada' => ['Cancelada', 'danger']
-                    ];
-
-                    [$estadoNome, $estadoClasse] =
-                      $estados[$reserva['estado']] ?? [$reserva['estado'], 'warning'];
-                    ?>
-
-                    <tr>
-
-                      <td>
-                        <strong>
-                          <?= htmlspecialchars($reserva['codigo']) ?>
-                        </strong>
-                      </td>
-
-                      <td>
-                        <?= htmlspecialchars($reserva['nome_utilizador'] ?? 'Não identificado') ?>
-                      </td>
-
-                      <td>
-                        <?= htmlspecialchars($reserva['numero_quarto'] ?? 'N/A') ?>
-                      </td>
-
-                      <td>
-                        <?= date('d/m/Y', strtotime($reserva['data_entrada'])) ?>
-                      </td>
-
-                      <td>
-                        <?= date('d/m/Y', strtotime($reserva['data_saida'])) ?>
-                      </td>
-
-                      <td>
-                        <?= number_format(
-                          (float) $reserva['total'],
-                          2,
-                          ',',
-                          '.'
-                        ) ?> Kz
-                      </td>
-
-                      <td>
-                        <span class="status-badge <?= $estadoClasse ?>">
-                          <?= htmlspecialchars($estadoNome) ?>
-                        </span>
-                      </td>
-
-                      <td>
-                        <button type="button" class="btn-icon"
-                          onclick="alert('Reserva: <?= htmlspecialchars($reserva['codigo'], ENT_QUOTES) ?>')">
-                          •••
-                        </button>
-                      </td>
-
-                    </tr>
-
-                  <?php endforeach; ?>
-
-                <?php endif; ?>
+              <tbody id="tbreserva">
 
               </tbody>
             </table>
@@ -1539,7 +1349,7 @@ $estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
 
       <!-- =====================================
      CONSULTAR RESERVAS
-===================================== -->
+     ===================================== -->
       <section class="page-section" id="page-consultar-reservas">
         <div class="page-header">
           <div>
@@ -1551,40 +1361,61 @@ $estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
         </div>
 
         <div class="content-card">
-          <div class="form-section">
+
+          <form class="form-section" id="formFilterReservas">
             <h2>Filtros de pesquisa</h2>
 
             <div class="form-grid">
               <div class="form-group">
-                <label>Código da reserva</label>
-                <input class="form-control" type="search" placeholder="Ex.: RES-001">
+                <label for="codigoReserva">Código da reserva</label>
+                <input
+                  id="codigoReserva"
+                  class="form-control"
+                  type="search"
+                  placeholder="Ex.: RES-001">
               </div>
+
               <div class="form-group">
-                <label>Nome do hóspede</label>
-                <input class="form-control" type="text" placeholder="Nome do hóspede">
+                <label for="nomeHospede">Nome do hóspede</label>
+                <input
+                  id="nomeHospede"
+                  class="form-control"
+                  type="text"
+                  placeholder="Nome do hóspede">
               </div>
+
               <div class="form-group">
-                <label>Data de entrada</label>
-                <input class="form-control" type="date">
+                <label for="dataEntrada">Data de entrada</label>
+                <input
+                  id="dataEntrada"
+                  class="form-control"
+                  type="date">
               </div>
+
               <div class="form-group">
-                <label>Estado</label>
-                <select class="form-control">
+                <label for="estadoReserva">Estado</label>
+                <select id="estadoReserva" class="form-control">
                   <option value="">Todos os estados</option>
-                  <option>Pendente</option>
-                  <option>Confirmada</option>
-                  <option>Check-in</option>
-                  <option>Concluída</option>
-                  <option>Cancelada</option>
+                  <option value="pendente">Pendente</option>
+                  <option value="confirmada">Confirmada</option>
+                  <option value="checkin">Check-in</option>
+                  <option value="concluida">Concluída</option>
+                  <option value="cancelada">Cancelada</option>
                 </select>
               </div>
             </div>
 
             <div class="filter-actions">
-              <button class="btn-secondary">Limpar filtros</button>
-              <button class="btn-primary">⌕ Pesquisar reservas</button>
+              <button type="reset" class="btn-secondary">
+                Limpar filtros
+              </button>
+
+              <button type="submit" class="btn-primary">
+                ⌕ Buscar reservas
+              </button>
             </div>
-          </div>
+          </form>
+
         </div>
 
         <div class="content-card">
@@ -1593,46 +1424,26 @@ $estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
               <h2>Resultados</h2>
               <p>Reservas correspondentes à pesquisa.</p>
             </div>
-            <span class="result-count">3 resultados</span>
+            <span class="result-count" id="resultCount">0 resultados</span>
+
           </div>
 
           <div class="table-wrapper">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Reserva</th>
+                  <th>Código</th>
                   <th>Hóspede</th>
-                  <th>Período</th>
-                  <th>Valor</th>
+                  <th>Quarto</th>
+                  <th>Entrada</th>
+                  <th>Saída</th>
+                  <th>Total</th>
                   <th>Estado</th>
                   <th>Ações</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td>#RES-001</td>
-                  <td>João Manuel</td>
-                  <td>02/11 a 05/11</td>
-                  <td>75.000 Kz</td>
-                  <td><span class="status-badge success">Confirmada</span></td>
-                  <td><button class="btn-icon">•••</button></td>
-                </tr>
-                <tr>
-                  <td>#RES-002</td>
-                  <td>Maria José</td>
-                  <td>04/11 a 07/11</td>
-                  <td>135.000 Kz</td>
-                  <td><span class="status-badge warning">Pendente</span></td>
-                  <td><button class="btn-icon">•••</button></td>
-                </tr>
-                <tr>
-                  <td>#RES-003</td>
-                  <td>Pedro António</td>
-                  <td>01/11 a 03/11</td>
-                  <td>150.000 Kz</td>
-                  <td><span class="status-badge info">Check-in</span></td>
-                  <td><button class="btn-icon">•••</button></td>
-                </tr>
+
+              <tbody id="tbodyConsultarReservas">
               </tbody>
             </table>
           </div>
@@ -1641,7 +1452,7 @@ $estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
 
       <!-- =====================================
      FOTOGRAFIAS
-===================================== -->
+       ===================================== -->
       <section class="page-section" id="page-imagens">
         <div class="page-header">
           <div>
@@ -1658,7 +1469,7 @@ $estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
               <h2>Galeria do estabelecimento</h2>
               <p>Organiza as imagens por tipo.</p>
             </div>
-            <select class="form-control">
+            <select class="form-control" hidden>
               <option>Todas as imagens</option>
               <option>Principal</option>
               <option>Galeria</option>
@@ -1670,12 +1481,22 @@ $estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
           <div class="gallery-grid">
             <?php foreach ($imagensHotel as $imagem): ?>
               <div class="gallery-item">
-                <div class="gallery-placeholder">
-                  <img src="<?= htmlspecialchars($imagem['url']) ?>" alt="Imagem do hotel">
-                </div>
+                <a target="_blank"
+                  href="<?= BASE_URL ?>/hotel/photo?hotel_id=<?= $hotelId ?>?image=<?= $imagem['id'] ?>">
+                  <div class="gallery-placeholder">
+                    <img src="<?= htmlspecialchars($imagem['url']) ?>" alt="Imagem do hotel">
+                  </div>
+                </a>
                 <div class="gallery-caption">
                   <div><strong><?= htmlspecialchars($imagem['tipo']) ?></strong><small>Imagem carregada</small></div>
-                  <button class="btn-icon">•••</button>
+                  <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                    <input type="hidden" name="acao" value="deletar_imagens">
+                    <input type="text"
+                      id="<?= $imagem['id'] ?>"
+                      hidden name="id" value="<?= $imagem['id'] ?>">
+                    <button class="delete btn-icon" type="submit">❌</button>
+                  </form>
                 </div>
               </div>
             <?php endforeach; ?>
@@ -1721,9 +1542,9 @@ $estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
 
             <div class="form-grid">
               <div class="form-group">
-                <label>Tipo de imagem</label>
+                <label for="tipo">Tipo de imagem</label>
 
-                <select class="form-control" name="tipo" required>
+                <select class="form-control" id="tipo" name="tipo" required>
                   <option value="galeria">Galeria</option>
                   <option value="principal">Imagem principal</option>
                   <option value="interior">Interior</option>
@@ -1791,9 +1612,22 @@ $estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
               ?>
 
               <article class="service-card">
+                <div class="servicos-icon-content">
 
-                <div class="service-icon">
-                  <?= $icone ?>
+                  <div class="service-icon">
+                    <?= $icone ?>
+                  </div>
+
+                  <div class="service-accoes">
+                    <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
+                      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                      <input type="hidden" name="acao" value="deletar_servico">
+                      <input type="text"
+                        id="<?= $servico['id'] ?>"
+                        hidden name="id" value="<?= $servico['id'] ?>">
+                      <button class="delete " type="submit">Deletar</button>
+                    </form>
+                  </div>
                 </div>
 
                 <div class="service-card-content">
@@ -2358,22 +2192,16 @@ $estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
       </section>
 
     </main>
-
   </div>
 
-
-  <script defer src="<?= BASE_URL ?>/assets/js/navigate.js"></script>
   <script>
     window.BASE_URL = <?= json_encode(BASE_URL) ?>;
+    window.DATAS = <?= json_encode($general_data) ?>;
   </script>
-  <script defer src="<?= BASE_URL ?>/assets/js/localizacao-hotel.js"></script>
+  <script src="<?= BASE_URL ?>/assets/js/localizacao-hotel.js"></script>
+  <script src="<?= BASE_URL ?>/assets/js/navigate.js"></script>
+  <script src="./assets/js/script.js"></script>
   <script>
-    function selecionarHotel(id) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('hotel_id', id);
-      window.location.href = url.toString();
-    }
-
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('open');
     }

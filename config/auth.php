@@ -222,6 +222,8 @@ function requireHotelAccess($hotelId = null): array
 
   if (!$hotel) {
     http_response_code(403);
+    header('Location: ' . BASE_URL
+      . '/');
     exit('Não tens permissão para gerir este hotel.');
   }
 

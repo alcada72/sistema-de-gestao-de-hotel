@@ -32,7 +32,7 @@ a {
 
 .topbar {
   height: 70px;
-  background: white;
+  background: var(--primary);
   border-bottom: 1px solid var(--border);
 }
 
@@ -50,7 +50,7 @@ a {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--text);
+  color: var(--background);
   font-size: 19px;
   font-weight: 750;
 }

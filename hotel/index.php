@@ -14,6 +14,7 @@ function imagemValida($url)
     ? $url
     : BASE_URL . '/assets/images/hotel-placeholder.jpg';
 }
+
 $usuario = getCurrentUser();
 
 
@@ -96,46 +97,15 @@ $stmt->execute([$hotelId]);
 $andares = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $stmt = $pdo->prepare("
-    SELECT
-        q.*,
-        a.numero_andar AS andar_numero,
-        c.nome AS categoria_nome,
-        c.preco_base AS preco,
-        c.capacidade AS capacidade
-    FROM quartos q
-
-    LEFT JOIN andares a
-        ON a.id = q.andar_id
-        AND a.hotel_id = q.hotel_id
-
-    LEFT JOIN categorias_quartos c
-        ON c.id = q.categoria_id
-        AND c.hotel_id = q.hotel_id
-
-    WHERE q.hotel_id = :hotel_id
-
-    ORDER BY
-        a.numero_andar ASC,
-        q.numero ASC,
-        q.id ASC
+    SELECT *  FROM quartos WHERE hotel_id = :hotel_id
 ");
 
 $stmt->execute([
   'hotel_id' => $hotelId
 ]);
 
-$quartos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 $stmt->execute([$hotelId]);
 $quartos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$quartosPorAndar = [];
-
-foreach ($quartos as $quarto) {
-  $andarId = $quarto['andar_id'] ?? 0;
-
-  $quartosPorAndar[$andarId][] = $quarto;
-}
 
 $imagemPrincipal = $imagens[0]['url'] ?? 'https://cdn1.iconfinder.com/data/icons/location-red/64/HOTEL-place-building-location_pin-placeholder-512.png';
 
@@ -177,14 +147,13 @@ $imagemPrincipal = $imagens[0]['url'] ?? 'https://cdn1.iconfinder.com/data/icons
         </a>
       <?php else: ?>
         <div class="avatar">
-          <?= e(mb_substr($usuario["nome"], 0, 2)) ?>
+          <?= e(mb_substr($usuario["nome"], 0, 1)) ?>
         </div>
       <?php endif; ?>
 
     </div>
 
   </header>
-
 
   <main>
 
@@ -219,19 +188,15 @@ $imagemPrincipal = $imagens[0]['url'] ?? 'https://cdn1.iconfinder.com/data/icons
 
           </div>
 
-          <a href="#quartos" class="btn-primary">
-            Ver quartos
-          </a>
-
         </div>
-
-
         <!-- Galeria -->
 
         <div class="gallery">
 
           <div class="gallery-main">
-            <img src="<?= e(imagemValida($imagemPrincipal)) ?>" alt="<?= e($hotel['nome']) ?>">
+            <a target="_blank" href=" <?= BASE_URL ?>/hotel/photo?hotel_id=<?= $hotelId ?>?image=<?= $imagens[0]['id'] ?>">
+              <img src="<?= e(imagemValida($imagemPrincipal)) ?>" alt="<?= e($hotel['nome']) ?>">
+            </a>
           </div>
 
           <div class="gallery-side">
@@ -241,8 +206,12 @@ $imagemPrincipal = $imagens[0]['url'] ?? 'https://cdn1.iconfinder.com/data/icons
               <div class="gallery-small">
 
                 <?php if (isset($imagens[$i])): ?>
-
-                  <img src="<?= e(imagemValida($imagens[$i]['url'])) ?>" alt="Imagem do hotel">
+                  <a target="_blank"
+                    href="<?= BASE_URL ?>/hotel/photo?hotel_id=<?= $hotelId ?>?image=<?= $imagens[$i]['id'] ?>">
+                    <img
+                      src="<?= e(imagemValida($imagens[$i]['url'])) ?>"
+                      alt="hotel">
+                  </a>
 
                 <?php else: ?>
 
@@ -337,169 +306,6 @@ $imagemPrincipal = $imagens[0]['url'] ?? 'https://cdn1.iconfinder.com/data/icons
 
         </section>
 
-
-        <!-- Quartos -->
-
-        <section class="section" id="quartos">
-
-          <h2>Quartos disponíveis</h2>
-
-          <p class="section-subtitle">
-            Conheça os quartos e escolha aquele que melhor
-            corresponde às suas necessidades.
-          </p>
-
-          <?php if (count($quartos) > 0): ?>
-
-            <?php foreach ($andares as $andar): ?>
-
-              <?php
-              $andarId = $andar['id'];
-              $quartosDoAndar = $quartosPorAndar[$andarId] ?? [];
-              ?>
-
-              <?php if (count($quartosDoAndar) > 0): ?>
-
-                <div class="floor-section">
-
-                  <h3>
-                    Andar Nº <?= e($andar['numero_andar']) ?>
-                  </h3>
-
-                  <div class="rooms-grid">
-
-                    <?php foreach ($quartosDoAndar as $quarto): ?>
-
-                      <article class="room-card">
-
-                        <div class="room-image">
-
-                          <?php if (!empty($quarto['imagem'])): ?>
-
-                            <img src="<?= e($quarto['imagem']) ?>" alt="<?= e($quarto['nome']) ?>">
-
-                          <?php else: ?>
-
-                            <div class="empty-image">
-                              Sem imagem
-                            </div>
-
-                          <?php endif; ?>
-
-                        </div>
-
-                        <div class="room-info">
-
-                          <span class="room-category">
-                            <?= e($quarto['categoria_nome']) ?>
-                          </span>
-
-                          <h4>
-                            Quarto <?= e($quarto['numero']) ?>
-                          </h4>
-
-                          <p>
-                            <?= e($quarto['descricao']) ?>
-                          </p>
-
-                          <div class="room-capacity">
-                            👤 Capacidade:
-                            <?= e($quarto['capacidade']) ?>
-                            pessoas
-                          </div>
-
-                          <div class="room-footer">
-
-                            <div class="room-price">
-
-                              <strong>
-                                <?= number_format(
-                                  (float) $quarto['preco'],
-                                  2,
-                                  ',',
-                                  '.'
-                                ) ?> Kz
-                              </strong>
-
-                              <small>por noite</small>
-
-                            </div>
-
-                            <a href="<?= BASE_URL ?>/hotel/reservar?hotel_id=<?= (int) $hotel['id'] ?>" class="btn-reserve">
-                              Reservar
-                            </a>
-
-                          </div>
-
-                        </div>
-
-                      </article>
-
-                    <?php endforeach; ?>
-
-                  </div>
-
-                </div>
-
-              <?php endif; ?>
-
-            <?php endforeach; ?>
-
-            <!-- Quartos sem andar associado -->
-
-            <?php if (!empty($quartosPorAndar[0])): ?>
-
-              <div class="floor-section">
-
-                <h3>Outros quartos</h3>
-
-                <div class="rooms-grid">
-
-                  <?php foreach ($quartosPorAndar[0] as $quarto): ?>
-
-                    <article class="room-card">
-
-                      <div class="room-info">
-
-                        <h4><?= e($quarto['nome']) ?></h4>
-
-                        <p><?= e($quarto['descricao']) ?></p>
-
-                        <strong>
-                          <?= number_format(
-                            (float) $quarto['preco'],
-                            2,
-                            ',',
-                            '.'
-                          ) ?> Kz / noite
-                        </strong>
-
-                        <a href="reservar.php?quarto_id=<?= (int) $quarto['id'] ?>" class="btn-reserve">
-                          Reservar
-                        </a>
-
-                      </div>
-
-                    </article>
-
-                  <?php endforeach; ?>
-
-                </div>
-
-              </div>
-
-            <?php endif; ?>
-
-          <?php else: ?>
-
-            <p class="empty-message">
-              Este hotel ainda não possui quartos cadastrados.
-            </p>
-
-          <?php endif; ?>
-
-        </section>
-
       </div>
 
 
@@ -518,14 +324,12 @@ $imagemPrincipal = $imagens[0]['url'] ?? 'https://cdn1.iconfinder.com/data/icons
           <a href="<?= BASE_URL ?>/hotel/reservar?hotel_id=<?= (int) $hotel['id'] ?>" class="btn-primary full-width">
             Reservar um Quarto
           </a>
-          <br>
-          <br>
-          <a href="#quartos" class="btn-outline btn full-width">
-            Consultar quartos
-          </a>
-
           <div class="booking-info">
 
+            <div>
+              <span>Andares</span>
+              <strong><?= count($andares) ?></strong>
+            </div>
             <div>
               <span>Quartos cadastrados</span>
               <strong><?= count($quartos) ?></strong>

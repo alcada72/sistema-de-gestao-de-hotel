@@ -929,7 +929,6 @@ textarea:focus-visible {
   letter-spacing: 1.5px;
 }
 
-
 /* =========================================
    BOTÕES
 ========================================= */
@@ -1025,6 +1024,7 @@ textarea:focus-visible {
 .toolbar-actions {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   flex-wrap: wrap;
 }
@@ -1045,8 +1045,7 @@ textarea:focus-visible {
 }
 
 .form-section {
-  padding-bottom: 25px;
-  margin-bottom: 25px;
+  margin-bottom: 15px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -1097,6 +1096,11 @@ textarea:focus-visible {
   font: inherit;
   font-size: 13px;
   transition: .2s ease;
+}
+
+.form-control .full-width {
+  flex: 1;
+  width: 100%;
 }
 
 textarea.form-control {
@@ -1191,7 +1195,7 @@ textarea.form-control {
   white-space: nowrap;
 }
 
-.status-badge.success {
+.status-badge.pendente {
   color: #18764d;
   background: #e6f5ed;
 }
@@ -1201,7 +1205,7 @@ textarea.form-control {
   background: #fff3d9;
 }
 
-.status-badge.danger {
+.status-badge.cancelada {
   color: #b33b3b;
   background: #fdeaea;
 }
@@ -1481,6 +1485,30 @@ textarea.form-control {
   margin-bottom: 12px;
 }
 
+.servicos-icon-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.servicos-icon-content .service-accoes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.servicos-icon-content .service-accoes button {
+  padding: 4px 8px;
+  background-color: var(--primary-light);
+  color: var(--background);
+  font-size: 10px;
+  border-radius: 30px;
+}
+
+.delete {
+  background-color: var(--danger) !important;
+}
 
 /* =========================================
    RESTAURANTE

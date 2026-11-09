@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -519,7 +520,6 @@ try {
       }
 
       $pdo->commit();
-
     } catch (Throwable $e) {
       if ($pdo->inTransaction()) {
         $pdo->rollBack();
@@ -536,6 +536,31 @@ try {
 
     painelFlash('sucesso', 'Fotografias adicionadas com sucesso.');
     painelRedirect($hotelId);
+  }
+
+  if ($acao === 'deletar_imagens') {
+    if (!$podeGerirHotel) {
+      throw new RuntimeException('Não tens permissão Para remover serviço.');
+    }
+
+    $id = (int) painelPost('id');
+
+    if (!$id) {
+      throw new RuntimeException('Preenche todos os campos.');
+    }
+    try {
+      $stmt = $pdo->prepare('DELETE FROM hotel_imagens WHERE id = :id');
+      $stmt->execute([
+        'id' => (int) $id
+      ]);
+
+      painelFlash('sucesso', 'Sucesso Imagem eliminada com sucesso.');
+
+      painelRedirect($hotelId);
+    } catch (\Throwable $e) {
+
+      painelErro($e->getMessage(), $hotelId);
+    }
   }
 
   /*
@@ -701,6 +726,34 @@ try {
     painelRedirect($hotelId);
   }
 
+  /* Deletar servico */
+
+  if ($acao === 'deletar_servico') {
+    if (!$podeGerirHotel) {
+      throw new RuntimeException('Não tens permissão Para remover serviço.');
+    }
+
+    $id = (int) painelPost('id');
+
+    if (!$id) {
+      throw new RuntimeException('Preenche todos os campos.');
+    }
+    try {
+      $stmt = $pdo->prepare('DELETE FROM servicos WHERE id = :id');
+      $stmt->execute([
+        'id' => (int) $id
+      ]);
+
+      painelFlash('sucesso', 'Sucesso serviço eliminado com sucesso.');
+
+      painelRedirect($hotelId);
+    } catch (\Throwable $e) {
+
+      painelErro($e->getMessage(), $hotelId);
+    }
+  }
+
+  /* Adcionar andar */
   if ($acao === 'adicionar_andar') {
     if (!$podeGerirQuartos) {
       throw new RuntimeException('Não tens permissão para adicionar andares.');
@@ -736,6 +789,7 @@ try {
     painelRedirect($hotelId);
   }
 
+  /* Adcionar Categoria */
   if ($acao === 'adicionar_categoria') {
     if (!$podeGerirQuartos) {
       throw new RuntimeException('Não tens permissão para adicionar categorias.');
@@ -785,14 +839,13 @@ try {
     painelRedirect($hotelId);
   }
 
-
   /*
   |--------------------------------------------------------------------------
   | ADICIONAR FUNCIONÁRIO
   |--------------------------------------------------------------------------
   */
   if ($acao === 'adicionar_funcionario') {
-    if (!$podeGerirFuncionarios) {
+    if (!$podeGerirHotel) {
       throw new RuntimeException('Não tens permissão para adicionar funcionarios.');
     }
 
@@ -915,7 +968,6 @@ try {
       ]);
 
       $pdo->commit();
-
     } catch (Throwable $e) {
 
       if ($pdo->inTransaction()) {
@@ -932,7 +984,7 @@ try {
 
     painelRedirect($hotelId);
   }
-
+  painelRedirect($hotelId);
 } catch (Throwable $e) {
 
   if ($pdo->inTransaction()) {

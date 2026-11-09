@@ -182,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
                 </a>
 
                 <a href="register.php" target="_self" class="btn-register">
-                    Cadastrar hotel
+                    Crair conta
                 </a>
                 <?php endif; ?>
 
