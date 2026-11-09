@@ -139,7 +139,7 @@ select {
 /* HERO */
 
 .hero {
-  min-height: 620px;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   position: relative;

@@ -194,7 +194,7 @@ $imagemPrincipal = $imagens[0]['url'] ?? 'https://cdn1.iconfinder.com/data/icons
         <div class="gallery">
 
           <div class="gallery-main">
-            <a target="_blank" href=" <?= BASE_URL ?>/hotel/photo?hotel_id=<?= $hotelId ?>?image=<?= $imagens[0]['id'] ?>">
+            <a href=" <?= BASE_URL ?>/hotel/photo?hotel_id=<?= $hotelId ?>?image=<?= $imagens[0]['id'] ?>">
               <img src="<?= e(imagemValida($imagemPrincipal)) ?>" alt="<?= e($hotel['nome']) ?>">
             </a>
           </div>
@@ -206,11 +206,8 @@ $imagemPrincipal = $imagens[0]['url'] ?? 'https://cdn1.iconfinder.com/data/icons
               <div class="gallery-small">
 
                 <?php if (isset($imagens[$i])): ?>
-                  <a target="_blank"
-                    href="<?= BASE_URL ?>/hotel/photo?hotel_id=<?= $hotelId ?>?image=<?= $imagens[$i]['id'] ?>">
-                    <img
-                      src="<?= e(imagemValida($imagens[$i]['url'])) ?>"
-                      alt="hotel">
+                  <a href="<?= BASE_URL ?>/hotel/photo?hotel_id=<?= $hotelId ?>?image=<?= $imagens[$i]['id'] ?>">
+                    <img src="<?= e(imagemValida($imagens[$i]['url'])) ?>" alt="hotel">
                   </a>
 
                 <?php else: ?>

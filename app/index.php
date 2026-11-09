@@ -10,8 +10,8 @@ $usuario = getCurrentUser();
 
 $hotel = requireHotelAccess(
   isset($_GET['hotel_id'])
-    ? (int) $_GET['hotel_id']
-    : null
+  ? (int) $_GET['hotel_id']
+  : null
 );
 
 $hotelSelecionado = $hotel;
@@ -402,7 +402,7 @@ $general_data = [
   "servicos" => $servicos,
 ]
 
-?>
+  ?>
 
 <!DOCTYPE html>
 <html lang="pt-AO">
@@ -422,7 +422,7 @@ $general_data = [
 
   <div class="dashboard">
     <!-- Sidebar -->
-    <?php require_once  __DIR__ . '/views/layouts/menu.php';  ?>
+    <?php require_once __DIR__ . '/views/layouts/menu.php'; ?>
 
     <!-- Conteúdo principal -->
     <main class="main-content">
@@ -432,24 +432,7 @@ $general_data = [
         </div>
       <?php endif; ?>
 
-      <header class="topbar">
-        <div class="topbar-left">
-          <button class="menu-toggle" onclick="toggleSidebar()">
-            ☰
-          </button>
-          <div class="breadcrumb">
-            <span>/</span>
-            <strong id="breadcrumbTitle">Dashboard</strong>
-          </div>
-        </div>
-
-        <div class="topbar-right">
-          <span class="status-dot"></span>
-          <span>Área do hotel</span>
-        </div>
-
-      </header>
-
+      <?php require_once __DIR__ . '/views/layouts/top_bar.php'; ?>
 
       <section class="page-section active" id="page-dashboard">
 
@@ -1166,8 +1149,9 @@ $general_data = [
               <option value="">Selecione Uma reserva </option>
               <?php foreach ($listaReservas as $reserva): ?>
 
-                <option value="<?= $reserva['codigo']  ?>">
-                  <?= $reserva['codigo']  ?> - <?= $reserva['nome_utilizador']  ?> - Quarto <?= $reserva['numero_quarto'] ?>
+                <option value="<?= $reserva['codigo'] ?>">
+                  <?= $reserva['codigo'] ?> - <?= $reserva['nome_utilizador'] ?> - Quarto
+                  <?= $reserva['numero_quarto'] ?>
                 </option>
               <?php endforeach; ?>
             </select>
@@ -1368,28 +1352,17 @@ $general_data = [
             <div class="form-grid">
               <div class="form-group">
                 <label for="codigoReserva">Código da reserva</label>
-                <input
-                  id="codigoReserva"
-                  class="form-control"
-                  type="search"
-                  placeholder="Ex.: RES-001">
+                <input id="codigoReserva" class="form-control" type="search" placeholder="Ex.: RES-001">
               </div>
 
               <div class="form-group">
                 <label for="nomeHospede">Nome do hóspede</label>
-                <input
-                  id="nomeHospede"
-                  class="form-control"
-                  type="text"
-                  placeholder="Nome do hóspede">
+                <input id="nomeHospede" class="form-control" type="text" placeholder="Nome do hóspede">
               </div>
 
               <div class="form-group">
                 <label for="dataEntrada">Data de entrada</label>
-                <input
-                  id="dataEntrada"
-                  class="form-control"
-                  type="date">
+                <input id="dataEntrada" class="form-control" type="date">
               </div>
 
               <div class="form-group">
@@ -1481,8 +1454,7 @@ $general_data = [
           <div class="gallery-grid">
             <?php foreach ($imagensHotel as $imagem): ?>
               <div class="gallery-item">
-                <a target="_blank"
-                  href="<?= BASE_URL ?>/hotel/photo?hotel_id=<?= $hotelId ?>?image=<?= $imagem['id'] ?>">
+                <a target="_blank" href="<?= BASE_URL ?>/hotel/photo?hotel_id=<?= $hotelId ?>?image=<?= $imagem['id'] ?>">
                   <div class="gallery-placeholder">
                     <img src="<?= htmlspecialchars($imagem['url']) ?>" alt="Imagem do hotel">
                   </div>
@@ -1492,9 +1464,7 @@ $general_data = [
                   <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                     <input type="hidden" name="acao" value="deletar_imagens">
-                    <input type="text"
-                      id="<?= $imagem['id'] ?>"
-                      hidden name="id" value="<?= $imagem['id'] ?>">
+                    <input type="text" id="<?= $imagem['id'] ?>" hidden name="id" value="<?= $imagem['id'] ?>">
                     <button class="delete btn-icon" type="submit">❌</button>
                   </form>
                 </div>
@@ -1622,9 +1592,7 @@ $general_data = [
                     <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
                       <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                       <input type="hidden" name="acao" value="deletar_servico">
-                      <input type="text"
-                        id="<?= $servico['id'] ?>"
-                        hidden name="id" value="<?= $servico['id'] ?>">
+                      <input type="text" id="<?= $servico['id'] ?>" hidden name="id" value="<?= $servico['id'] ?>">
                       <button class="delete " type="submit">Deletar</button>
                     </form>
                   </div>
@@ -2201,6 +2169,7 @@ $general_data = [
   <script src="<?= BASE_URL ?>/assets/js/localizacao-hotel.js"></script>
   <script src="<?= BASE_URL ?>/assets/js/navigate.js"></script>
   <script src="./assets/js/script.js"></script>
+  <script src="./assets/js/toggleSidebar.js"></script>
   <script>
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('open');
