@@ -378,9 +378,24 @@ CREATE TABLE
   ) ENGINE = InnoDB;
 
 -- ============================================================
--- 17. SEED - PROVINCIAS DE ANGOLA
+-- . SECTORES
 -- ============================================================
-INSERT IGNORE INTO provincias (nome)
+CREATE TABLE
+  menu (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+  )
+CREATE TABLE
+  menu_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    link VARCHAR(255) NOT NULL UNIQUE,
+    sector_id INT,
+    FOREIGN KEY (sector_id) REFERENCES sector (id)
+  )
+  -- ============================================================
+  -- 17. SEED - PROVINCIAS DE ANGOLA
+  -- ============================================================
+  INSERT IGNORE INTO provincias (nome)
 VALUES
   ('Bengo'),
   ('Benguela'),
@@ -692,46 +707,3 @@ FROM
   hoteis
 WHERE
   slug = 'hotel-demo-luanda';
-
--- ============================================================
--- FIM DO SCRIPT
--- ============================================================
--- ============================================================
--- CONSULTAS PARA TESTAR O SEED
--- ============================================================
--- Ver todas as provincias
--- SELECT * FROM provincias;
--- Ver municipios e provincias
--- SELECT
---     m.nome AS municipio,
---     p.nome AS provincia
--- FROM municipios m
--- INNER JOIN provincias p
---     ON p.id = m.provincia_id;
--- Ver os hoteis cadastrados
--- SELECT
---     h.id,
---     h.nome,
---     h.slug,
---     h.estado,
---     p.nome AS provincia,
---     m.nome AS municipio
--- FROM hoteis h
--- INNER JOIN provincias p
---     ON p.id = h.provincia_id
--- INNER JOIN municipios m
---     ON m.id = h.municipio_id;
--- Ver quartos do hotel
--- SELECT
---     q.numero,
---     c.nome AS categoria,
---     c.preco_base,
---     q.estado
--- FROM quartos q
--- INNER JOIN categorias_quartos c
---     ON c.id = q.categoria_id
--- WHERE q.hotel_id = 1;
--- Ver servicos do hotel
--- SELECT *
--- FROM servicos
--- WHERE hotel_id = 1;

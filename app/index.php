@@ -589,34 +589,6 @@ $general_data = [
           </button>
         </div>
 
-        <div class="stats-grid">
-
-          <div class="stat-card">
-            <span>Total de quartos</span>
-            <strong><?= (int) $estatisticasQuartos['total'] ?></strong>
-            <small>Quartos registados</small>
-          </div>
-
-          <div class="stat-card">
-            <span>Ativos</span>
-            <strong><?= (int) $estatisticasQuartos['ativos'] ?></strong>
-            <small>Quartos ativos</small>
-          </div>
-
-          <div class="stat-card">
-            <span>Manutenção</span>
-            <strong><?= (int) $estatisticasQuartos['manutencao'] ?></strong>
-            <small>Fora de serviço</small>
-          </div>
-
-          <div class="stat-card">
-            <span>Inativos</span>
-            <strong><?= (int) $estatisticasQuartos['inativos'] ?></strong>
-            <small>Quartos desativados</small>
-          </div>
-
-        </div>
-
         <div class="content-card">
           <div class="toolbar">
             <div>
@@ -662,20 +634,20 @@ $general_data = [
                 <?php foreach ($listaQuartos as $quarto): ?>
 
                 <?php
-                        $estadoClasses = [
-                          'ativo' => 'success',
-                          'manutencao' => 'warning',
-                          'inativo' => 'danger'
-                        ];
+                    $estadoClasses = [
+                      'ativo' => 'success',
+                      'manutencao' => 'warning',
+                      'inativo' => 'danger'
+                    ];
 
-                        $estadoNomes = [
-                          'ativo' => 'Ativo',
-                          'manutencao' => 'Manutenção',
-                          'inativo' => 'Inativo'
-                        ];
+                    $estadoNomes = [
+                      'ativo' => 'Ativo',
+                      'manutencao' => 'Manutenção',
+                      'inativo' => 'Inativo'
+                    ];
 
-                        $estado = $quarto['estado'];
-                        ?>
+                    $estado = $quarto['estado'];
+                    ?>
 
                 <tr>
 
@@ -699,11 +671,11 @@ $general_data = [
 
                   <td>
                     <?= number_format(
-                              (float) $quarto['preco_base'],
-                              2,
-                              ',',
-                              '.'
-                            ) ?> Kz
+                          (float) $quarto['preco_base'],
+                          2,
+                          ',',
+                          '.'
+                        ) ?> Kz
                   </td>
 
                   <td>
@@ -840,22 +812,6 @@ $general_data = [
           <button class="btn-primary" data-page="adicionar-andares">
             ＋ Adicionar andar
           </button>
-        </div>
-
-        <div class="stats-grid">
-
-          <div class="stat-card">
-            <span>Total de andares</span>
-            <strong><?= count($listaAndares) ?></strong>
-            <small>Pisos registados</small>
-          </div>
-
-          <div class="stat-card">
-            <span>Total de quartos</span>
-            <strong><?= $totalQuartos ?></strong>
-            <small>Distribuídos pelos pisos</small>
-          </div>
-
         </div>
 
         <div class="floor-grid">
@@ -1001,11 +957,11 @@ $general_data = [
                 <small>Preço base</small>
                 <strong>
                   <?= number_format(
-                            (float) $categoria['preco_base'],
-                            2,
-                            ',',
-                            '.'
-                          ) ?> Kz
+                        (float) $categoria['preco_base'],
+                        2,
+                        ',',
+                        '.'
+                      ) ?> Kz
                 </strong>
               </div>
 
@@ -1226,21 +1182,21 @@ $general_data = [
 
                   <?php foreach ($quartosAtivos as $quarto): ?>
                   <?php
-                      $categoriaQuarto = null;
+                    $categoriaQuarto = null;
 
-                      foreach ($categorias as $categoria) {
-                        if ((int) $categoria['id'] === (int) $quarto['categoria_id']) {
-                          $categoriaQuarto = $categoria;
-                          break;
-                        }
+                    foreach ($categorias as $categoria) {
+                      if ((int) $categoria['id'] === (int) $quarto['categoria_id']) {
+                        $categoriaQuarto = $categoria;
+                        break;
                       }
-                      ?>
+                    }
+                    ?>
 
                   <option value="<?= (int) $quarto['id'] ?>">
                     <?= htmlspecialchars($quarto['numero']) ?>
                     <?= $categoriaQuarto
-                          ? ' - ' . htmlspecialchars($categoriaQuarto['nome'])
-                          : '' ?>
+                        ? ' - ' . htmlspecialchars($categoriaQuarto['nome'])
+                        : '' ?>
                   </option>
                   <?php endforeach; ?>
 
@@ -1558,16 +1514,16 @@ $general_data = [
           <?php foreach ($servicos as $servico): ?>
 
           <?php
-                  $icone = match ($servico['nome']) {
-                    'Wi-Fi' => '📶',
-                    'Piscina' => '🏊',
-                    'Estacionamento' => '🚗',
-                    'Lavandaria' => '👕',
-                    'Restaurante' => '🍽️',
-                    'Ginásio' => '🏋️',
-                    default => '✨'
-                  };
-                  ?>
+              $icone = match ($servico['nome']) {
+                'Wi-Fi' => '📶',
+                'Piscina' => '🏊',
+                'Estacionamento' => '🚗',
+                'Lavandaria' => '👕',
+                'Restaurante' => '🍽️',
+                'Ginásio' => '🏋️',
+                default => '✨'
+              };
+              ?>
 
           <article class="service-card">
             <div class="servicos-icon-content">
@@ -1598,10 +1554,10 @@ $general_data = [
 
               <p>
                 <?= htmlspecialchars(
-                          $servico['descricao'] ?: 'Sem descrição disponível.',
-                          ENT_QUOTES,
-                          'UTF-8'
-                        ) ?>
+                      $servico['descricao'] ?: 'Sem descrição disponível.',
+                      ENT_QUOTES,
+                      'UTF-8'
+                    ) ?>
               </p>
 
               <div class="service-price">
@@ -1723,29 +1679,6 @@ $general_data = [
           <button class="btn-primary">＋ Novo produto</button>
         </div>
 
-        <div class="stats-grid">
-          <div class="stat-card">
-            <span>Produtos</span>
-            <strong>32</strong>
-            <small>Itens no menu</small>
-          </div>
-          <div class="stat-card">
-            <span>Pedidos pendentes</span>
-            <strong>08</strong>
-            <small>Aguardam preparação</small>
-          </div>
-          <div class="stat-card">
-            <span>Em preparação</span>
-            <strong>04</strong>
-            <small>Pedidos em curso</small>
-          </div>
-          <div class="stat-card">
-            <span>Concluídos hoje</span>
-            <strong>24</strong>
-            <small>Pedidos finalizados</small>
-          </div>
-        </div>
-
         <div class="restaurant-tabs">
           <button class="restaurant-tab active">Pedidos</button>
           <button class="restaurant-tab">Menu</button>
@@ -1815,28 +1748,6 @@ $general_data = [
             <p>Gere os utilizadores associados ao estabelecimento e os respetivos cargos.</p>
           </div>
           <button class="btn-primary" data-page="adicionar-funcionario">＋ Adicionar funcionário</button>
-        </div>
-
-        <div class="stats-grid">
-          <div class="stat-card">
-            <span>Total de membros</span>
-            <strong><?= (int) $estatisticasFuncionarios['total'] ?></strong>
-          </div>
-
-          <div class="stat-card">
-            <span>Gerentes</span>
-            <strong><?= (int) $estatisticasFuncionarios['gerentes'] ?></strong>
-          </div>
-
-          <div class="stat-card">
-            <span>Recepcionistas</span>
-            <strong><?= (int) $estatisticasFuncionarios['recepcionistas'] ?></strong>
-          </div>
-
-          <div class="stat-card">
-            <span>Operadores</span>
-            <strong><?= (int) $estatisticasFuncionarios['operadores'] ?></strong>
-          </div>
         </div>
 
         <div class="content-card">
