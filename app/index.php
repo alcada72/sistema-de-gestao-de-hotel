@@ -404,21 +404,7 @@ $general_data = [
 
   ?>
 
-<!DOCTYPE html>
-<html lang="pt-AO">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Painel do Hotel | <?= htmlspecialchars($nomeHotel) ?></title>
-
-  <link rel="stylesheet" href="<?= BASE_URL ?>/app/assets/css/style.css">
-  <link rel="stylesheet" href="<?= BASE_URL ?>/app/assets/css/topbar.css">
-  <link rel="stylesheet" href="<?= BASE_URL ?>/app/assets/css/menu.css">
-  <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/btn.css">
-  <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/alert.css">
-</head>
+<?php require_once __DIR__ . '/views/layouts/head.php' ?>
 
 <body>
 
@@ -676,20 +662,20 @@ $general_data = [
                 <?php foreach ($listaQuartos as $quarto): ?>
 
                 <?php
-                    $estadoClasses = [
-                      'ativo' => 'success',
-                      'manutencao' => 'warning',
-                      'inativo' => 'danger'
-                    ];
+                        $estadoClasses = [
+                          'ativo' => 'success',
+                          'manutencao' => 'warning',
+                          'inativo' => 'danger'
+                        ];
 
-                    $estadoNomes = [
-                      'ativo' => 'Ativo',
-                      'manutencao' => 'Manutenção',
-                      'inativo' => 'Inativo'
-                    ];
+                        $estadoNomes = [
+                          'ativo' => 'Ativo',
+                          'manutencao' => 'Manutenção',
+                          'inativo' => 'Inativo'
+                        ];
 
-                    $estado = $quarto['estado'];
-                    ?>
+                        $estado = $quarto['estado'];
+                        ?>
 
                 <tr>
 
@@ -713,11 +699,11 @@ $general_data = [
 
                   <td>
                     <?= number_format(
-                          (float) $quarto['preco_base'],
-                          2,
-                          ',',
-                          '.'
-                        ) ?> Kz
+                              (float) $quarto['preco_base'],
+                              2,
+                              ',',
+                              '.'
+                            ) ?> Kz
                   </td>
 
                   <td>
@@ -1015,11 +1001,11 @@ $general_data = [
                 <small>Preço base</small>
                 <strong>
                   <?= number_format(
-                        (float) $categoria['preco_base'],
-                        2,
-                        ',',
-                        '.'
-                      ) ?> Kz
+                            (float) $categoria['preco_base'],
+                            2,
+                            ',',
+                            '.'
+                          ) ?> Kz
                 </strong>
               </div>
 
@@ -1240,21 +1226,21 @@ $general_data = [
 
                   <?php foreach ($quartosAtivos as $quarto): ?>
                   <?php
-                    $categoriaQuarto = null;
+                      $categoriaQuarto = null;
 
-                    foreach ($categorias as $categoria) {
-                      if ((int) $categoria['id'] === (int) $quarto['categoria_id']) {
-                        $categoriaQuarto = $categoria;
-                        break;
+                      foreach ($categorias as $categoria) {
+                        if ((int) $categoria['id'] === (int) $quarto['categoria_id']) {
+                          $categoriaQuarto = $categoria;
+                          break;
+                        }
                       }
-                    }
-                    ?>
+                      ?>
 
                   <option value="<?= (int) $quarto['id'] ?>">
                     <?= htmlspecialchars($quarto['numero']) ?>
                     <?= $categoriaQuarto
-                        ? ' - ' . htmlspecialchars($categoriaQuarto['nome'])
-                        : '' ?>
+                          ? ' - ' . htmlspecialchars($categoriaQuarto['nome'])
+                          : '' ?>
                   </option>
                   <?php endforeach; ?>
 
@@ -1572,16 +1558,16 @@ $general_data = [
           <?php foreach ($servicos as $servico): ?>
 
           <?php
-              $icone = match ($servico['nome']) {
-                'Wi-Fi' => '📶',
-                'Piscina' => '🏊',
-                'Estacionamento' => '🚗',
-                'Lavandaria' => '👕',
-                'Restaurante' => '🍽️',
-                'Ginásio' => '🏋️',
-                default => '✨'
-              };
-              ?>
+                  $icone = match ($servico['nome']) {
+                    'Wi-Fi' => '📶',
+                    'Piscina' => '🏊',
+                    'Estacionamento' => '🚗',
+                    'Lavandaria' => '👕',
+                    'Restaurante' => '🍽️',
+                    'Ginásio' => '🏋️',
+                    default => '✨'
+                  };
+                  ?>
 
           <article class="service-card">
             <div class="servicos-icon-content">
@@ -1612,10 +1598,10 @@ $general_data = [
 
               <p>
                 <?= htmlspecialchars(
-                      $servico['descricao'] ?: 'Sem descrição disponível.',
-                      ENT_QUOTES,
-                      'UTF-8'
-                    ) ?>
+                          $servico['descricao'] ?: 'Sem descrição disponível.',
+                          ENT_QUOTES,
+                          'UTF-8'
+                        ) ?>
               </p>
 
               <div class="service-price">
@@ -2168,20 +2154,7 @@ $general_data = [
 
   </div>
 
-  <script>
-  window.BASE_URL = <?= json_encode(BASE_URL) ?>;
-  window.DATAS = <?= json_encode($general_data) ?>;
-  </script>
-  <script src="<?= BASE_URL ?>/assets/js/localizacao-hotel.js"></script>
-  <script src="<?= BASE_URL ?>/assets/js/navigate.js"></script>
-  <script src="./assets/js/script.js"></script>
-  <script src="./assets/js/toggleSidebar.js"></script>
-  <script>
-  function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
-  }
-  </script>
-
+  <?php require_once __DIR__ . '/views/layouts/scripts.php' ?>
 
 </body>
 

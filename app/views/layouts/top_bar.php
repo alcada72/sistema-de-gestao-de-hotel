@@ -3,9 +3,19 @@
     <button class="menu-toggle" onclick="toggleSidebar()">
       ☰
     </button>
-    <div class="breadcrumb">
-      <span>/</span>
-      <strong id="breadcrumbTitle">Dashboard</strong>
+
+    <div class="hotel-selector">
+      <select onchange="selecionarHotel(this.value)">
+
+        <?php foreach ($hoteis as $hotel): ?>
+
+        <option value="<?= (int) $hotel['id'] ?>" <?= (int) $hotel['id'] === $hotelId ? 'selected' : '' ?>>
+          <?= htmlspecialchars($hotel['nome']) ?>
+        </option>
+
+        <?php endforeach; ?>
+
+      </select>
     </div>
   </div>
 

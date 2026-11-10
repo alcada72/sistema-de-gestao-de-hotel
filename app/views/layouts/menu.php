@@ -13,23 +13,6 @@
     </button>
   </div>
 
-  <div class="hotel-selector">
-
-    <label>Estabelecimento</label>
-
-    <select onchange="selecionarHotel(this.value)">
-
-      <?php foreach ($hoteis as $hotel): ?>
-
-      <option value="<?= (int) $hotel['id'] ?>" <?= (int) $hotel['id'] === $hotelId ? 'selected' : '' ?>>
-        <?= htmlspecialchars($hotel['nome']) ?>
-      </option>
-
-      <?php endforeach; ?>
-
-    </select>
-
-  </div>
 
   <nav class="navigation">
 
@@ -202,7 +185,7 @@
 
     <?php if ($podeGerirHotel): ?>
 
-    <button class="nav-link" data-page="hotel" data-title="Dados do hotel">
+    <button class="nav-link" data-page="relatorio" data-title="Relatórios">
       <span class="nav-icon" title="Relatorio">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"

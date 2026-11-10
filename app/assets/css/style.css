@@ -16,8 +16,8 @@
   --danger: #c84c4c;
 
   --sidebar-width: 200px;
-  --sidebar-colapsed: 70px;
-  --topbar-height: 50px;
+  --sidebar-colapsed: 60px;
+  --topbar-height: 40px;
 
   --radius-sm: 7px;
   --radius-md: 10px;
@@ -49,6 +49,7 @@ input,
 select,
 textarea {
   font: inherit;
+  outline: none;
 }
 
 button {
@@ -96,7 +97,7 @@ textarea:focus-visible {
 
 .page-section {
   display: none;
-  padding: 25px 30px;
+  padding: 5px 30px;
 
   animation: appear 0.25s ease;
 }
@@ -980,13 +981,16 @@ textarea.form-control {
 .gallery-caption strong {
   color: var(--primary);
   font-size: 13px;
+
+  &::first-letter {
+    text-transform: uppercase;
+  }
 }
 
 .gallery-caption small {
   color: var(--muted);
   font-size: 11px;
 }
-
 
 /* =========================================
    UPLOAD DE IMAGENS
@@ -1033,7 +1037,6 @@ textarea.form-control {
   color: var(--muted);
   font-size: 12px;
 }
-
 
 /* =========================================
    SERVIÇOS
