@@ -26,6 +26,7 @@
 }
 
 /* Marca */
+
 .brand {
   display: flex;
   align-items: center;
@@ -54,6 +55,8 @@
 }
 
 .brand #showSidebar svg {
+  display: block;
+  stroke: currentColor;
   transform: scale(0.9);
 }
 
@@ -127,6 +130,13 @@
   font-size: 20px;
   color: var(--surface);
   transform: scale(0.7);
+}
+
+.nav-icon svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+  stroke: currentColor;
 }
 
 /* TOOLTIP */

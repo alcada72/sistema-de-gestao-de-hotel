@@ -378,24 +378,102 @@ CREATE TABLE
   ) ENGINE = InnoDB;
 
 -- ============================================================
--- . SECTORES
+-- . Menu
 -- ============================================================
 CREATE TABLE
   menu (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
-  )
+    nome VARCHAR(100) NOT NULL,
+    chave VARCHAR(100) NOT NULL UNIQUE,
+    icone VARCHAR(100) DEFAULT NULL,
+    ordem INT NOT NULL DEFAULT 0,
+    ativo TINYINT (1) NOT NULL DEFAULT 1
+  ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
 CREATE TABLE
   menu_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    menu_id INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
     link VARCHAR(255) NOT NULL UNIQUE,
-    sector_id INT,
-    FOREIGN KEY (sector_id) REFERENCES sector (id)
-  )
-  -- ============================================================
-  -- 17. SEED - PROVINCIAS DE ANGOLA
-  -- ============================================================
-  INSERT IGNORE INTO provincias (nome)
+    icone VARCHAR(100) DEFAULT NULL,
+    ordem INT NOT NULL DEFAULT 0,
+    ativo TINYINT (1) NOT NULL DEFAULT 1,
+    CONSTRAINT fk_menu_items_menu FOREIGN KEY (menu_id) REFERENCES menu (id) ON DELETE CASCADE
+  ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE
+  menu_permissoes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    menu_id INT NOT NULL,
+    cargo ENUM (
+      'proprietario',
+      'gerente',
+      'recepcionista',
+      'operador'
+    ) NOT NULL DEFAULT 'proprietario',
+    UNIQUE KEY uk_menu_cargo (menu_id, cargo),
+    CONSTRAINT fk_menu_permissoes_menu FOREIGN KEY (menu_id) REFERENCES menu (id) ON DELETE CASCADE
+  ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+ALTER TABLE menu_permissoes ADD UNIQUE KEY uq_menu_cargo (menu_id, cargo);
+
+INSERT INTO
+  menu (nome, chave, icone, ordem)
+VALUES
+  (
+    'Principal',
+    'dashboard',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>',
+    1
+  ),
+  (
+    'Quartos',
+    'quartos',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/><path d="M6 8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2"/></svg>',
+    2
+  ),
+  (
+    'Reservas',
+    'reservas',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 15 2 2 4-4"/></svg>',
+    3
+  ),
+  (
+    'Restaurante',
+    'restaurante',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7a4 4 0 0 0 4 4h1V2"/><path d="M6 2v20"/><path d="M14 2v8a4 4 0 0 0 4 4h1V2"/><path d="M18 14v8"/></svg>',
+    4
+  ),
+  (
+    'Serviços',
+    'servicos',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 15 5 19 5 19 9 22 12 19 15 19 19 15 19 12 22 9 19 5 19 5 15 2 12 5 9 5 5 9 5Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    5
+  ),
+  (
+    'Funcionários',
+    'funcionarios',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    6
+  ),
+  (
+    'Relatórios',
+    'relatorios',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-5 5"/><path d="M19 9h-5"/><path d="M19 9v5"/></svg>',
+    7
+  ),
+  (
+    'Hotel',
+    'hotel',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V7l9-5 9 5v15"/><path d="M9 22v-5h6v5"/><path d="M7 10h2m6 0h2M7 14h2m6 0h2"/></svg>',
+    8
+  );
+
+-- ============================================================
+-- 17. SEED - PROVINCIAS DE ANGOLA
+-- ============================================================
+INSERT IGNORE INTO provincias (nome)
 VALUES
   ('Bengo'),
   ('Benguela'),
