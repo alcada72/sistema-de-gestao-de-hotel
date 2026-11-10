@@ -17,12 +17,6 @@
       button.classList.toggle("active", button.dataset.page === page);
     });
 
-    const activeLink = $(`.nav-link[data-page="${page}"]`);
-    $("#breadcrumbTitle").textContent =
-      activeLink?.textContent.trim() ||
-      { dashboard: "Dashboard" }[page] ||
-      page;
-
     $("#sidebar")?.classList.remove("open");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }

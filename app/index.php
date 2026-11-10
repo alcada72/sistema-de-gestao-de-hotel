@@ -414,6 +414,8 @@ $general_data = [
   <title>Painel do Hotel | <?= htmlspecialchars($nomeHotel) ?></title>
 
   <link rel="stylesheet" href="<?= BASE_URL ?>/app/assets/css/style.css">
+  <link rel="stylesheet" href="<?= BASE_URL ?>/app/assets/css/topbar.css">
+  <link rel="stylesheet" href="<?= BASE_URL ?>/app/assets/css/menu.css">
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/btn.css">
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/alert.css">
 </head>
@@ -427,9 +429,9 @@ $general_data = [
     <!-- Conteúdo principal -->
     <main class="main-content">
       <?php if ($flash): ?>
-        <div class="alert alert-<?= htmlspecialchars($flash['tipo']) ?>">
-          <?= htmlspecialchars($flash['mensagem']) ?>
-        </div>
+      <div class="alert alert-<?= htmlspecialchars($flash['tipo']) ?>">
+        <?= htmlspecialchars($flash['mensagem']) ?>
+      </div>
       <?php endif; ?>
 
       <?php require_once __DIR__ . '/views/layouts/top_bar.php'; ?>
@@ -665,15 +667,15 @@ $general_data = [
 
                 <?php if (empty($listaQuartos)): ?>
 
-                  <tr>
-                    <td colspan="7">Ainda não existem quartos registados.</td>
-                  </tr>
+                <tr>
+                  <td colspan="7">Ainda não existem quartos registados.</td>
+                </tr>
 
                 <?php else: ?>
 
-                  <?php foreach ($listaQuartos as $quarto): ?>
+                <?php foreach ($listaQuartos as $quarto): ?>
 
-                    <?php
+                <?php
                     $estadoClasses = [
                       'ativo' => 'success',
                       'manutencao' => 'warning',
@@ -689,50 +691,50 @@ $general_data = [
                     $estado = $quarto['estado'];
                     ?>
 
-                    <tr>
+                <tr>
 
-                      <td>
-                        <strong>
-                          <?= htmlspecialchars($quarto['numero']) ?>
-                        </strong>
-                      </td>
+                  <td>
+                    <strong>
+                      <?= htmlspecialchars($quarto['numero']) ?>
+                    </strong>
+                  </td>
 
-                      <td>
-                        <?= htmlspecialchars($quarto['categoria']) ?>
-                      </td>
+                  <td>
+                    <?= htmlspecialchars($quarto['categoria']) ?>
+                  </td>
 
-                      <td>
-                        <?= (int) $quarto['numero_andar'] ?>.º Andar
-                      </td>
+                  <td>
+                    <?= (int) $quarto['numero_andar'] ?>.º Andar
+                  </td>
 
-                      <td>
-                        <?= (int) $quarto['capacidade'] ?> pessoas
-                      </td>
+                  <td>
+                    <?= (int) $quarto['capacidade'] ?> pessoas
+                  </td>
 
-                      <td>
-                        <?= number_format(
+                  <td>
+                    <?= number_format(
                           (float) $quarto['preco_base'],
                           2,
                           ',',
                           '.'
                         ) ?> Kz
-                      </td>
+                  </td>
 
-                      <td>
-                        <span class="status-badge <?= $estadoClasses[$estado] ?? 'warning' ?>">
-                          <?= $estadoNomes[$estado] ?? htmlspecialchars($estado) ?>
-                        </span>
-                      </td>
+                  <td>
+                    <span class="status-badge <?= $estadoClasses[$estado] ?? 'warning' ?>">
+                      <?= $estadoNomes[$estado] ?? htmlspecialchars($estado) ?>
+                    </span>
+                  </td>
 
-                      <td>
-                        <button type="button" class="btn-icon" onclick="alert('ID do quarto: <?= (int) $quarto['id'] ?>')">
-                          •••
-                        </button>
-                      </td>
+                  <td>
+                    <button type="button" class="btn-icon" onclick="alert('ID do quarto: <?= (int) $quarto['id'] ?>')">
+                      •••
+                    </button>
+                  </td>
 
-                    </tr>
+                </tr>
 
-                  <?php endforeach; ?>
+                <?php endforeach; ?>
 
                 <?php endif; ?>
 
@@ -779,9 +781,9 @@ $general_data = [
                   <option value="">Selecionar andar</option>
 
                   <?php foreach ($andares as $andar): ?>
-                    <option value="<?= (int) $andar['id'] ?>">
-                      <?= (int) $andar['numero_andar'] ?>.º Andar
-                    </option>
+                  <option value="<?= (int) $andar['id'] ?>">
+                    <?= (int) $andar['numero_andar'] ?>.º Andar
+                  </option>
                   <?php endforeach; ?>
 
                 </select>
@@ -793,10 +795,10 @@ $general_data = [
                   <option value="">Selecionar categoria</option>
 
                   <?php foreach ($categorias as $categoria): ?>
-                    <option value="<?= (int) $categoria['id'] ?>">
-                      <?= htmlspecialchars($categoria['nome']) ?>
-                      — <?= number_format((float) $categoria['preco_base'], 2, ',', '.') ?> Kz
-                    </option>
+                  <option value="<?= (int) $categoria['id'] ?>">
+                    <?= htmlspecialchars($categoria['nome']) ?>
+                    — <?= number_format((float) $categoria['preco_base'], 2, ',', '.') ?> Kz
+                  </option>
                   <?php endforeach; ?>
 
                 </select>
@@ -874,40 +876,40 @@ $general_data = [
 
           <?php if (empty($listaAndares)): ?>
 
-            <p>Este hotel ainda não possui andares registados.</p>
+          <p>Este hotel ainda não possui andares registados.</p>
 
           <?php else: ?>
 
-            <?php foreach ($listaAndares as $andar): ?>
+          <?php foreach ($listaAndares as $andar): ?>
 
-              <article class="floor-card">
+          <article class="floor-card">
 
-                <div class="floor-card-top">
-                  <div class="floor-icon">🏢</div>
-                  <span class="status-badge success">Registado</span>
-                </div>
+            <div class="floor-card-top">
+              <div class="floor-icon">🏢</div>
+              <span class="status-badge success">Registado</span>
+            </div>
 
-                <h3>
-                  <?= (int) $andar['numero_andar'] ?>.º Andar
-                </h3>
+            <h3>
+              <?= (int) $andar['numero_andar'] ?>.º Andar
+            </h3>
 
-                <p>
-                  <?= htmlspecialchars($andar['descricao'] ?? 'Sem descrição') ?>
-                </p>
+            <p>
+              <?= htmlspecialchars($andar['descricao'] ?? 'Sem descrição') ?>
+            </p>
 
-                <div class="floor-info">
-                  <strong>
-                    <?= (int) $andar['total_quartos'] ?> quartos
-                  </strong>
+            <div class="floor-info">
+              <strong>
+                <?= (int) $andar['total_quartos'] ?> quartos
+              </strong>
 
-                  <span>
-                    <?= (int) $andar['quartos_ativos'] ?> ativos
-                  </span>
-                </div>
+              <span>
+                <?= (int) $andar['quartos_ativos'] ?> ativos
+              </span>
+            </div>
 
-              </article>
+          </article>
 
-            <?php endforeach; ?>
+          <?php endforeach; ?>
 
           <?php endif; ?>
 
@@ -982,57 +984,57 @@ $general_data = [
 
           <?php if (empty($listaCategorias)): ?>
 
-            <p>Ainda não existem categorias de quartos.</p>
+          <p>Ainda não existem categorias de quartos.</p>
 
           <?php else: ?>
 
-            <?php foreach ($listaCategorias as $categoria): ?>
+          <?php foreach ($listaCategorias as $categoria): ?>
 
-              <article class="category-card">
+          <article class="category-card">
 
-                <div class="category-card-icon">🛏️</div>
+            <div class="category-card-icon">🛏️</div>
 
-                <span class="status-badge <?= $categoria['ativo'] ? 'success' : 'danger' ?>">
-                  <?= $categoria['ativo'] ? 'Ativa' : 'Inativa' ?>
-                </span>
+            <span class="status-badge <?= $categoria['ativo'] ? 'success' : 'danger' ?>">
+              <?= $categoria['ativo'] ? 'Ativa' : 'Inativa' ?>
+            </span>
 
-                <h3>
-                  <?= htmlspecialchars($categoria['nome']) ?>
-                </h3>
+            <h3>
+              <?= htmlspecialchars($categoria['nome']) ?>
+            </h3>
 
-                <div class="category-details">
+            <div class="category-details">
 
-                  <div>
-                    <small>Capacidade</small>
-                    <strong>
-                      <?= (int) $categoria['capacidade'] ?> pessoas
-                    </strong>
-                  </div>
+              <div>
+                <small>Capacidade</small>
+                <strong>
+                  <?= (int) $categoria['capacidade'] ?> pessoas
+                </strong>
+              </div>
 
-                  <div>
-                    <small>Preço base</small>
-                    <strong>
-                      <?= number_format(
+              <div>
+                <small>Preço base</small>
+                <strong>
+                  <?= number_format(
                         (float) $categoria['preco_base'],
                         2,
                         ',',
                         '.'
                       ) ?> Kz
-                    </strong>
-                  </div>
+                </strong>
+              </div>
 
-                  <div>
-                    <small>Quartos</small>
-                    <strong>
-                      <?= (int) $categoria['total_quartos'] ?>
-                    </strong>
-                  </div>
+              <div>
+                <small>Quartos</small>
+                <strong>
+                  <?= (int) $categoria['total_quartos'] ?>
+                </strong>
+              </div>
 
-                </div>
+            </div>
 
-              </article>
+          </article>
 
-            <?php endforeach; ?>
+          <?php endforeach; ?>
 
           <?php endif; ?>
 
@@ -1149,10 +1151,10 @@ $general_data = [
               <option value="">Selecione Uma reserva </option>
               <?php foreach ($listaReservas as $reserva): ?>
 
-                <option value="<?= $reserva['codigo'] ?>">
-                  <?= $reserva['codigo'] ?> - <?= $reserva['nome_utilizador'] ?> - Quarto
-                  <?= $reserva['numero_quarto'] ?>
-                </option>
+              <option value="<?= $reserva['codigo'] ?>">
+                <?= $reserva['codigo'] ?> - <?= $reserva['nome_utilizador'] ?> - Quarto
+                <?= $reserva['numero_quarto'] ?>
+              </option>
               <?php endforeach; ?>
             </select>
 
@@ -1237,7 +1239,7 @@ $general_data = [
                   <option value="">Selecionar quarto</option>
 
                   <?php foreach ($quartosAtivos as $quarto): ?>
-                    <?php
+                  <?php
                     $categoriaQuarto = null;
 
                     foreach ($categorias as $categoria) {
@@ -1248,12 +1250,12 @@ $general_data = [
                     }
                     ?>
 
-                    <option value="<?= (int) $quarto['id'] ?>">
-                      <?= htmlspecialchars($quarto['numero']) ?>
-                      <?= $categoriaQuarto
+                  <option value="<?= (int) $quarto['id'] ?>">
+                    <?= htmlspecialchars($quarto['numero']) ?>
+                    <?= $categoriaQuarto
                         ? ' - ' . htmlspecialchars($categoriaQuarto['nome'])
                         : '' ?>
-                    </option>
+                  </option>
                   <?php endforeach; ?>
 
                 </select>
@@ -1453,22 +1455,22 @@ $general_data = [
 
           <div class="gallery-grid">
             <?php foreach ($imagensHotel as $imagem): ?>
-              <div class="gallery-item">
-                <a target="_blank" href="<?= BASE_URL ?>/hotel/photo?hotel_id=<?= $hotelId ?>?image=<?= $imagem['id'] ?>">
-                  <div class="gallery-placeholder">
-                    <img src="<?= htmlspecialchars($imagem['url']) ?>" alt="Imagem do hotel">
-                  </div>
-                </a>
-                <div class="gallery-caption">
-                  <div><strong><?= htmlspecialchars($imagem['tipo']) ?></strong><small>Imagem carregada</small></div>
-                  <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
-                    <input type="hidden" name="acao" value="deletar_imagens">
-                    <input type="text" id="<?= $imagem['id'] ?>" hidden name="id" value="<?= $imagem['id'] ?>">
-                    <button class="delete btn-icon" type="submit">❌</button>
-                  </form>
+            <div class="gallery-item">
+              <a target="_blank" href="<?= BASE_URL ?>/hotel/photo?hotel_id=<?= $hotelId ?>?image=<?= $imagem['id'] ?>">
+                <div class="gallery-placeholder">
+                  <img src="<?= htmlspecialchars($imagem['url']) ?>" alt="Imagem do hotel">
                 </div>
+              </a>
+              <div class="gallery-caption">
+                <div><strong><?= htmlspecialchars($imagem['tipo']) ?></strong><small>Imagem carregada</small></div>
+                <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
+                  <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                  <input type="hidden" name="acao" value="deletar_imagens">
+                  <input type="text" id="<?= $imagem['id'] ?>" hidden name="id" value="<?= $imagem['id'] ?>">
+                  <button class="delete btn-icon" type="submit">❌</button>
+                </form>
               </div>
+            </div>
             <?php endforeach; ?>
 
           </div>
@@ -1550,9 +1552,9 @@ $general_data = [
           </div>
 
           <?php if ($podeGerirHotel): ?>
-            <button class="btn-primary" data-page="adicionar-servico">
-              ＋ Adicionar serviço
-            </button>
+          <button class="btn-primary" data-page="adicionar-servico">
+            ＋ Adicionar serviço
+          </button>
           <?php endif; ?>
         </div>
 
@@ -1560,16 +1562,16 @@ $general_data = [
 
           <?php if (empty($servicos)): ?>
 
-            <div class="content-card">
-              <h3>Nenhum serviço registado</h3>
-              <p>Ainda não existem serviços cadastrados neste hotel.</p>
-            </div>
+          <div class="content-card">
+            <h3>Nenhum serviço registado</h3>
+            <p>Ainda não existem serviços cadastrados neste hotel.</p>
+          </div>
 
           <?php else: ?>
 
-            <?php foreach ($servicos as $servico): ?>
+          <?php foreach ($servicos as $servico): ?>
 
-              <?php
+          <?php
               $icone = match ($servico['nome']) {
                 'Wi-Fi' => '📶',
                 'Piscina' => '🏊',
@@ -1581,61 +1583,61 @@ $general_data = [
               };
               ?>
 
-              <article class="service-card">
-                <div class="servicos-icon-content">
+          <article class="service-card">
+            <div class="servicos-icon-content">
 
-                  <div class="service-icon">
-                    <?= $icone ?>
-                  </div>
+              <div class="service-icon">
+                <?= $icone ?>
+              </div>
 
-                  <div class="service-accoes">
-                    <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
-                      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
-                      <input type="hidden" name="acao" value="deletar_servico">
-                      <input type="text" id="<?= $servico['id'] ?>" hidden name="id" value="<?= $servico['id'] ?>">
-                      <button class="delete " type="submit">Deletar</button>
-                    </form>
-                  </div>
-                </div>
+              <div class="service-accoes">
+                <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
+                  <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                  <input type="hidden" name="acao" value="deletar_servico">
+                  <input type="text" id="<?= $servico['id'] ?>" hidden name="id" value="<?= $servico['id'] ?>">
+                  <button class="delete " type="submit">Deletar</button>
+                </form>
+              </div>
+            </div>
 
-                <div class="service-card-content">
+            <div class="service-card-content">
 
-                  <span class="status-badge <?= $servico['disponivel'] ? 'success' : 'danger' ?>">
-                    <?= $servico['disponivel'] ? 'Ativo' : 'Indisponível' ?>
-                  </span>
+              <span class="status-badge <?= $servico['disponivel'] ? 'success' : 'danger' ?>">
+                <?= $servico['disponivel'] ? 'Ativo' : 'Indisponível' ?>
+              </span>
 
-                  <h3>
-                    <?= htmlspecialchars($servico['nome'], ENT_QUOTES, 'UTF-8') ?>
-                  </h3>
+              <h3>
+                <?= htmlspecialchars($servico['nome'], ENT_QUOTES, 'UTF-8') ?>
+              </h3>
 
-                  <p>
-                    <?= htmlspecialchars(
+              <p>
+                <?= htmlspecialchars(
                       $servico['descricao'] ?: 'Sem descrição disponível.',
                       ENT_QUOTES,
                       'UTF-8'
                     ) ?>
-                  </p>
+              </p>
 
-                  <div class="service-price">
-                    <?php if ($servico['tipo'] === 'gratuito'): ?>
+              <div class="service-price">
+                <?php if ($servico['tipo'] === 'gratuito'): ?>
 
-                      <strong>Gratuito</strong>
+                <strong>Gratuito</strong>
 
-                    <?php else: ?>
+                <?php else: ?>
 
-                      <strong>
-                        <?= number_format((float) $servico['preco'], 2, ',', '.') ?>
-                        Kz
-                      </strong>
+                <strong>
+                  <?= number_format((float) $servico['preco'], 2, ',', '.') ?>
+                  Kz
+                </strong>
 
-                    <?php endif; ?>
-                  </div>
+                <?php endif; ?>
+              </div>
 
-                </div>
+            </div>
 
-              </article>
+          </article>
 
-            <?php endforeach; ?>
+          <?php endforeach; ?>
 
           <?php endif; ?>
 
@@ -1884,46 +1886,46 @@ $general_data = [
 
                 <?php if (empty($listaFuncionarios)): ?>
 
-                  <tr>
-                    <td colspan="5">Ainda não existem funcionários associados.</td>
-                  </tr>
+                <tr>
+                  <td colspan="5">Ainda não existem funcionários associados.</td>
+                </tr>
 
                 <?php else: ?>
 
-                  <?php foreach ($listaFuncionarios as $funcionario): ?>
+                <?php foreach ($listaFuncionarios as $funcionario): ?>
 
-                    <tr>
+                <tr>
 
-                      <td>
-                        <strong>
-                          <?= htmlspecialchars($funcionario['nome']) ?>
-                        </strong>
-                      </td>
+                  <td>
+                    <strong>
+                      <?= htmlspecialchars($funcionario['nome']) ?>
+                    </strong>
+                  </td>
 
-                      <td>
-                        <?= htmlspecialchars($funcionario['email']) ?>
-                      </td>
+                  <td>
+                    <?= htmlspecialchars($funcionario['email']) ?>
+                  </td>
 
-                      <td>
-                        <?= htmlspecialchars(ucfirst($funcionario['cargo'])) ?>
-                      </td>
+                  <td>
+                    <?= htmlspecialchars(ucfirst($funcionario['cargo'])) ?>
+                  </td>
 
-                      <td>
-                        <span class="status-badge <?= $funcionario['ativo'] ? 'success' : 'danger' ?>">
-                          <?= $funcionario['ativo'] ? 'Ativo' : 'Inativo' ?>
-                        </span>
-                      </td>
+                  <td>
+                    <span class="status-badge <?= $funcionario['ativo'] ? 'success' : 'danger' ?>">
+                      <?= $funcionario['ativo'] ? 'Ativo' : 'Inativo' ?>
+                    </span>
+                  </td>
 
-                      <td>
-                        <button type="button" class="btn-icon"
-                          onclick="alert('Utilizador: <?= (int) $funcionario['usuario_id'] ?>')">
-                          •••
-                        </button>
-                      </td>
+                  <td>
+                    <button type="button" class="btn-icon"
+                      onclick="alert('Utilizador: <?= (int) $funcionario['usuario_id'] ?>')">
+                      •••
+                    </button>
+                  </td>
 
-                    </tr>
+                </tr>
 
-                  <?php endforeach; ?>
+                <?php endforeach; ?>
 
                 <?php endif; ?>
 
@@ -2066,9 +2068,10 @@ $general_data = [
                   ?>
 
                   <?php foreach ($categoriasHotel as $valor => $rotulo): ?>
-                    <option value="<?= htmlspecialchars($valor) ?>" <?= $dadosHotel['categoria'] === $valor ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($rotulo) ?>
-                    </option>
+                  <option value="<?= htmlspecialchars($valor) ?>"
+                    <?= $dadosHotel['categoria'] === $valor ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($rotulo) ?>
+                  </option>
                   <?php endforeach; ?>
                 </select>
               </div>
@@ -2118,9 +2121,10 @@ $general_data = [
 
                 <select class="form-control" name="provincia_id" id="provincia_id" required>
                   <?php foreach ($provincias as $provincia): ?>
-                    <option value="<?= (int) $provincia['id'] ?>" <?= (int) $dadosHotel['provincia_id'] === (int) $provincia['id'] ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($provincia['nome']) ?>
-                    </option>
+                  <option value="<?= (int) $provincia['id'] ?>"
+                    <?= (int) $dadosHotel['provincia_id'] === (int) $provincia['id'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($provincia['nome']) ?>
+                  </option>
                   <?php endforeach; ?>
                 </select>
               </div>
@@ -2130,9 +2134,10 @@ $general_data = [
 
                 <select class="form-control" name="municipio_id" id="municipio_id" required>
                   <?php foreach ($municipios as $municipio): ?>
-                    <option value="<?= (int) $municipio['id'] ?>" <?= (int) $dadosHotel['municipio_id'] === (int) $municipio['id'] ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($municipio['nome']) ?>
-                    </option>
+                  <option value="<?= (int) $municipio['id'] ?>"
+                    <?= (int) $dadosHotel['municipio_id'] === (int) $municipio['id'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($municipio['nome']) ?>
+                  </option>
                   <?php endforeach; ?>
                 </select>
               </div>
@@ -2160,20 +2165,21 @@ $general_data = [
       </section>
 
     </main>
+
   </div>
 
   <script>
-    window.BASE_URL = <?= json_encode(BASE_URL) ?>;
-    window.DATAS = <?= json_encode($general_data) ?>;
+  window.BASE_URL = <?= json_encode(BASE_URL) ?>;
+  window.DATAS = <?= json_encode($general_data) ?>;
   </script>
   <script src="<?= BASE_URL ?>/assets/js/localizacao-hotel.js"></script>
   <script src="<?= BASE_URL ?>/assets/js/navigate.js"></script>
   <script src="./assets/js/script.js"></script>
   <script src="./assets/js/toggleSidebar.js"></script>
   <script>
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
-    }
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+  }
   </script>
 
 
