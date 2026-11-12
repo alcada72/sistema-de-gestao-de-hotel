@@ -118,8 +118,7 @@ $imagemPrincipal = $imagens[0]['url'] ?? 'https://cdn1.iconfinder.com/data/icons
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title><?= e($hotel['nome']) ?> | MultiploHotel</title>
-
+  <?php require_once __DIR__ . '/../config/favicon.php' ?>
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/hotel.css">
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/btn.css">
 
@@ -131,9 +130,11 @@ $imagemPrincipal = $imagens[0]['url'] ?? 'https://cdn1.iconfinder.com/data/icons
 
     <div class="container header-content">
 
-      <a href="<?= BASE_URL ?>/index.php" class="logo">
-        MultiploHotel
-      </a>
+      <div class="brand">
+        <a href="<?= BASE_URL ?>/index.php" class="logo">
+          <img src="<?= BASE_URL ?>/assets/img/logo-multiplo.png" alt="logo multiplo">
+        </a>
+      </div>
 
       <nav>
         <a href="<?= BASE_URL ?>/index.php">Início</a>

@@ -321,8 +321,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       // Guardar credenciais temporariamente na mensagem
       redirectWithMessage(
         "Hotel cadastrado com sucesso! O hotel está pendente de aprovação. " .
-          "Conta do proprietário: " . $emailProprietario .
-          " | Senha inicial: " . $senhaInicial
+        "Conta do proprietário: " . $emailProprietario .
+        " | Senha inicial: " . $senhaInicial
       );
     } catch (Throwable $e) {
 
@@ -390,8 +390,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     redirectWithMessage(
       $stmt->rowCount() > 0
-        ? "Hotel suspenso com sucesso."
-        : "Não foi possível suspender este hotel.",
+      ? "Hotel suspenso com sucesso."
+      : "Não foi possível suspender este hotel.",
       $stmt->rowCount() > 0 ? "success" : "error"
     );
   }
@@ -416,8 +416,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     redirectWithMessage(
       $stmt->rowCount() > 0
-        ? "Hotel reativado com sucesso."
-        : "Não foi possível reativar este hotel.",
+      ? "Hotel reativado com sucesso."
+      : "Não foi possível reativar este hotel.",
       $stmt->rowCount() > 0 ? "success" : "error"
     );
   }
@@ -442,8 +442,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     redirectWithMessage(
       $stmt->rowCount() > 0
-        ? "Hotel rejeitado."
-        : "Não foi possível rejeitar este hotel.",
+      ? "Hotel rejeitado."
+      : "Não foi possível rejeitar este hotel.",
       $stmt->rowCount() > 0 ? "success" : "error"
     );
   }
@@ -580,6 +580,8 @@ unset($_SESSION["flash"]);
   <title>Painel Administrativo | Hotelaria</title>
 
   <link rel="stylesheet" href="./assets/css/style.css">
+  <?php require_once __DIR__ . '/../config/favicon.php' ?>
+
 
 </head>
 
@@ -660,9 +662,9 @@ unset($_SESSION["flash"]);
 
       <?php if ($flash): ?>
 
-        <div class="alert <?= e($flash["type"]) ?>">
-          <?= e($flash["message"]) ?>
-        </div>
+      <div class="alert <?= e($flash["type"]) ?>">
+        <?= e($flash["message"]) ?>
+      </div>
 
       <?php endif; ?>
 
@@ -781,9 +783,9 @@ unset($_SESSION["flash"]);
 
                   <?php foreach ($provincias as $provincia): ?>
 
-                    <option value="<?= (int) $provincia["id"] ?>">
-                      <?= e($provincia["nome"]) ?>
-                    </option>
+                  <option value="<?= (int) $provincia["id"] ?>">
+                    <?= e($provincia["nome"]) ?>
+                  </option>
 
                   <?php endforeach; ?>
 
@@ -890,9 +892,9 @@ unset($_SESSION["flash"]);
                   <option value="">Selecione um hotel</option>
 
                   <?php foreach ($hoteis as $hotel): ?>
-                    <option value="<?= (int) $hotel['id'] ?>">
-                      <?= e($hotel['nome']) ?>
-                    </option>
+                  <option value="<?= (int) $hotel['id'] ?>">
+                    <?= e($hotel['nome']) ?>
+                  </option>
                   <?php endforeach; ?>
                 </select>
               </div>
@@ -903,9 +905,9 @@ unset($_SESSION["flash"]);
             </div>
 
             <?php if ($hotelSelecionado): ?>
-              <a href="index.php#hoteis" class="btn-clear-selection">
-                Limpar seleção
-              </a>
+            <a href="index.php#hoteis" class="btn-clear-selection">
+              Limpar seleção
+            </a>
             <?php endif; ?>
 
           </form>
@@ -932,89 +934,89 @@ unset($_SESSION["flash"]);
 
   <script src="<?= BASE_URL ?>/assets/js/navigate.js"></script>
   <script>
-    const municipios = <?= json_encode(
-                          $municipios,
-                          JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
-                        ) ?>;
+  const municipios = <?= json_encode(
+      $municipios,
+      JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+    ) ?>;
 
-    const provinciaSelect = document.querySelector("#provincia");
-    const municipioSelect = document.querySelector("#municipio");
+  const provinciaSelect = document.querySelector("#provincia");
+  const municipioSelect = document.querySelector("#municipio");
 
-    provinciaSelect.addEventListener("change", function() {
+  provinciaSelect.addEventListener("change", function() {
 
-      const provinciaId = this.value;
+    const provinciaId = this.value;
 
+    municipioSelect.innerHTML =
+      '<option value="">Selecione o município</option>';
+
+    municipioSelect.disabled = !provinciaId;
+
+    if (!provinciaId) return;
+
+    const filtrados = municipios.filter(municipio =>
+      String(municipio.provincia_id) === String(provinciaId)
+    );
+
+    filtrados.forEach(municipio => {
+
+      const option = document.createElement("option");
+
+      option.value = municipio.id;
+      option.textContent = municipio.nome;
+
+      municipioSelect.appendChild(option);
+
+    });
+
+    if (filtrados.length === 0) {
       municipioSelect.innerHTML =
-        '<option value="">Selecione o município</option>';
+        '<option value="">Nenhum município cadastrado</option>';
+    }
 
-      municipioSelect.disabled = !provinciaId;
+  });
 
-      if (!provinciaId) return;
+  const menuToggle = document.querySelector("#menuToggle");
+  const sidebar = document.querySelector("#sidebar");
 
-      const filtrados = municipios.filter(municipio =>
-        String(municipio.provincia_id) === String(provinciaId)
-      );
+  menuToggle.addEventListener("click", () => {
+    sidebar.classList.toggle("open");
+  });
 
-      filtrados.forEach(municipio => {
+  sidebar.querySelectorAll("nav a").forEach(link => {
 
-        const option = document.createElement("option");
-
-        option.value = municipio.id;
-        option.textContent = municipio.nome;
-
-        municipioSelect.appendChild(option);
-
-      });
-
-      if (filtrados.length === 0) {
-        municipioSelect.innerHTML =
-          '<option value="">Nenhum município cadastrado</option>';
-      }
-
+    link.addEventListener("click", () => {
+      sidebar.classList.remove("open");
     });
 
-    const menuToggle = document.querySelector("#menuToggle");
-    const sidebar = document.querySelector("#sidebar");
+  });
 
-    menuToggle.addEventListener("click", () => {
-      sidebar.classList.toggle("open");
-    });
+  const hoteis = <?= json_encode(
+      $hoteis,
+      JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+    ) ?>;
+  const csrfToken = <?= json_encode($_SESSION["csrf_token"]) ?>;
+  const baseUrl = <?= json_encode(BASE_URL) ?>;
 
-    sidebar.querySelectorAll("nav a").forEach(link => {
+  const hotelSelect = document.querySelector("#hotel_id");
+  const hotelDetails = document.querySelector("#hotel-details");
 
-      link.addEventListener("click", () => {
-        sidebar.classList.remove("open");
-      });
+  const esc = (v) =>
+    String(v ?? "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    } [c]));
 
-    });
-
-    const hoteis = <?= json_encode(
-                      $hoteis,
-                      JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
-                    ) ?>;
-    const csrfToken = <?= json_encode($_SESSION["csrf_token"]) ?>;
-    const baseUrl = <?= json_encode(BASE_URL) ?>;
-
-    const hotelSelect = document.querySelector("#hotel_id");
-    const hotelDetails = document.querySelector("#hotel-details");
-
-    const esc = (v) =>
-      String(v ?? "").replace(/[&<>"']/g, (c) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      } [c]));
-
-    const item = (label, value, fallback = "Não informado") =>
-      `<div class="detail-item">
+  const item = (label, value, fallback = "Não informado") =>
+    `<div class="detail-item">
      <span>${label}</span>
      <strong>${esc(value || fallback)}</strong>
    </div>`;
 
-    function actionForm(action, id, label, cls, msg) {
-      return `
+  function actionForm(action, id, label, cls, msg) {
+    return `
     <form method="POST" class="inline-form">
       <input type="hidden" name="csrf_token" value="${esc(csrfToken)}">
       <input type="hidden" name="action" value="${action}">
@@ -1022,36 +1024,36 @@ unset($_SESSION["flash"]);
       <button type="submit" class="btn-action ${cls}"
         onclick="return confirm('${msg}')">${label}</button>
     </form>`;
-    }
+  }
 
-    function renderActions(h) {
-      let html = `
+  function renderActions(h) {
+    let html = `
     <a href="${esc(baseUrl)}/hotel?slug=${encodeURIComponent(h.slug)}"
        target="_blank" rel="noopener noreferrer"
        class="btn-action btn-view">Visualizar página pública</a>`;
 
-      switch (h.estado) {
-        case "pendente":
-          html += actionForm("approve_hotel", h.id, "Aprovar hotel", "btn-approve", "Desejas aprovar este hotel?");
-          html += actionForm("reject_hotel", h.id, "Rejeitar hotel", "btn-reject", "Desejas rejeitar este hotel?");
-          break;
-        case "aprovado":
-          html += actionForm("suspend_hotel", h.id, "Suspender hotel", "btn-suspend", "Desejas suspender este hotel?");
-          break;
-        case "suspenso":
-          html += actionForm("activate_hotel", h.id, "Reativar hotel", "btn-activate", "Desejas reativar este hotel?");
-          break;
-        default:
-          html += `<span class="no-action">Não existem ações disponíveis para este estado.</span>`;
-      }
-      return html;
+    switch (h.estado) {
+      case "pendente":
+        html += actionForm("approve_hotel", h.id, "Aprovar hotel", "btn-approve", "Desejas aprovar este hotel?");
+        html += actionForm("reject_hotel", h.id, "Rejeitar hotel", "btn-reject", "Desejas rejeitar este hotel?");
+        break;
+      case "aprovado":
+        html += actionForm("suspend_hotel", h.id, "Suspender hotel", "btn-suspend", "Desejas suspender este hotel?");
+        break;
+      case "suspenso":
+        html += actionForm("activate_hotel", h.id, "Reativar hotel", "btn-activate", "Desejas reativar este hotel?");
+        break;
+      default:
+        html += `<span class="no-action">Não existem ações disponíveis para este estado.</span>`;
     }
+    return html;
+  }
 
-    function renderHotel(h) {
-      const estado = h.estado.charAt(0).toUpperCase() + h.estado.slice(1);
-      const localizacao = [h.municipio, h.provincia].filter(Boolean).join(", ");
+  function renderHotel(h) {
+    const estado = h.estado.charAt(0).toUpperCase() + h.estado.slice(1);
+    const localizacao = [h.municipio, h.provincia].filter(Boolean).join(", ");
 
-      hotelDetails.innerHTML = `
+    hotelDetails.innerHTML = `
     <div class="selected-hotel">
       <div class="selected-hotel-header">
         <div>
@@ -1089,22 +1091,22 @@ unset($_SESSION["flash"]);
 
       <div class="selected-hotel-actions">${renderActions(h)}</div>
     </div>`;
-    }
+  }
 
-    hotelSelect.addEventListener("change", function() {
-      const hotel = hoteis.find((h) => String(h.id) === this.value);
+  hotelSelect.addEventListener("change", function() {
+    const hotel = hoteis.find((h) => String(h.id) === this.value);
 
-      if (!hotel) {
-        hotelDetails.innerHTML = `
+    if (!hotel) {
+      hotelDetails.innerHTML = `
       <div class="hotel-selection-empty">
         <div class="empty-icon">⌂</div>
         <h3>Nenhum hotel selecionado</h3>
         <p>Seleciona um hotel na lista acima para ver os detalhes.</p>
       </div>`;
-        return;
-      }
-      renderHotel(hotel);
-    });
+      return;
+    }
+    renderHotel(hotel);
+  });
   </script>
 
 </body>

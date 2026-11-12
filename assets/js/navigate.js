@@ -7,24 +7,42 @@
 
   function navigate(page) {
     const target = document.getElementById(`page-${page}`);
-    if (!target) return;
 
+    if (!target) {
+      console.warn(`Página não encontrada: page-${page}`);
+      return;
+    }
+
+    // Mostrar página selecionada
     $$(".page-section").forEach((section) => {
       section.classList.toggle("active", section === target);
     });
 
+    // Atualizar menu principal
     $$(".nav-link").forEach((button) => {
       button.classList.toggle("active", button.dataset.page === page);
     });
 
+    // Fechar sidebar em dispositivos móveis
     $("#sidebar")?.classList.remove("open");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
-  $$("[data-page]").forEach((button) => {
+  // Disponibilizar navegação para outros scripts
+  window.navigate = navigate;
+
+  // Eventos dos menus principais
+  $$(".nav-link").forEach((button) => {
     button.addEventListener("click", (event) => {
       event.preventDefault();
-      navigate(button.dataset.page);
+
+      const page = button.dataset.page;
+
+      navigate(page);
     });
   });
 })();

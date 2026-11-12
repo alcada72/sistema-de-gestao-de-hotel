@@ -53,6 +53,7 @@ CREATE TABLE
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(150) NOT NULL,
     slug VARCHAR(180) NOT NULL UNIQUE,
+    logotipo TEXT,
     descricao TEXT,
     email VARCHAR(150),
     telefone VARCHAR(30),
@@ -385,7 +386,7 @@ CREATE TABLE
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     chave VARCHAR(100) NOT NULL UNIQUE,
-    icone VARCHAR(100) DEFAULT NULL,
+    icone TEXT DEFAULT NULL,
     ordem INT NOT NULL DEFAULT 0,
     ativo TINYINT (1) NOT NULL DEFAULT 1
   ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
@@ -396,7 +397,7 @@ CREATE TABLE
     menu_id INT NOT NULL,
     nome VARCHAR(100) NOT NULL,
     link VARCHAR(255) NOT NULL UNIQUE,
-    icone VARCHAR(100) DEFAULT NULL,
+    icone TEXT DEFAULT NULL,
     ordem INT NOT NULL DEFAULT 0,
     ativo TINYINT (1) NOT NULL DEFAULT 1,
     CONSTRAINT fk_menu_items_menu FOREIGN KEY (menu_id) REFERENCES menu (id) ON DELETE CASCADE
@@ -418,8 +419,7 @@ CREATE TABLE
 
 ALTER TABLE menu_permissoes ADD UNIQUE KEY uq_menu_cargo (menu_id, cargo);
 
-INSERT INTO
-  menu (nome, chave, icone, ordem)
+INSERT IGNORE INTO menu (nome, chave, icone, ordem)
 VALUES
   (
     'Principal',
@@ -459,7 +459,7 @@ VALUES
   ),
   (
     'Relatórios',
-    'relatorios',
+    'relatorio',
     '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-5 5"/><path d="M19 9h-5"/><path d="M19 9v5"/></svg>',
     7
   ),
@@ -468,6 +468,210 @@ VALUES
     'hotel',
     '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V7l9-5 9 5v15"/><path d="M9 22v-5h6v5"/><path d="M7 10h2m6 0h2M7 14h2m6 0h2"/></svg>',
     8
+  );
+
+INSERT INTO
+  menu_items (menu_id, nome, link, icone, ordem, ativo)
+VALUES
+  -- 1. PRINCIPAL
+  (
+    1,
+    'Visão geral',
+    'dashboard',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>',
+    1,
+    1
+  ),
+  -- 2. QUARTOS
+  (
+    2,
+    'Todos os quartos',
+    'quartos',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/><path d="M6 12h16"/></svg>',
+    1,
+    1
+  ),
+  (
+    2,
+    'Categorias',
+    'categorias',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h8v8H3z"/><path d="M13 3h8v8h-8z"/><path d="M13 13h8v8h-8z"/><path d="M3 13h8v8H3z"/></svg>',
+    2,
+    1
+  ),
+  (
+    2,
+    'Andares',
+    'andares',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V5l9-3 9 3v16"/><path d="M3 10h18"/><path d="M3 15h18"/><path d="M9 21v-3h6v3"/><path d="M8 7h.01"/><path d="M16 7h.01"/></svg>',
+    3,
+    1
+  ),
+  (
+    2,
+    'Cadastrar Quarto',
+    'quartos-adicionar',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus preview-icon"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>',
+    4,
+    1
+  ),
+  -- 3. RESERVAS
+  (
+    3,
+    'Todas as reservas',
+    'reservas',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>',
+    1,
+    1
+  ),
+  (
+    3,
+    'Reserva presencial',
+    'reserva-presencial',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M12 13v6"/><path d="M9 16h6"/></svg>',
+    2,
+    1
+  ),
+  (
+    3,
+    'Check-in',
+    'checkin',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>',
+    3,
+    1
+  ),
+  (
+    3,
+    'Check-out',
+    'checkout',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="m14 17-5-5 5-5"/><path d="M9 12h12"/></svg>',
+    4,
+    1
+  ),
+  -- 4. RESTAURANTE
+  (
+    4,
+    'Categorias',
+    'restaurante-categorias',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L3.4 13.4a2 2 0 0 1 0-2.82l7.18-7.18A2 2 0 0 1 12 2.8h7a2 2 0 0 1 2 2v7a2 2 0 0 1-.41 1.61Z"/><circle cx="16" cy="8" r="1"/></svg>',
+    1,
+    1
+  ),
+  (
+    4,
+    'Produtos',
+    'restaurante-produtos',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7a4 4 0 0 0 4 4h1"/><path d="M7 2v7"/><path d="M11 2v7a4 4 0 0 1-4 4v9"/><path d="M18 2v20"/><path d="M18 2a4 4 0 0 1 4 4v5h-4"/></svg>',
+    2,
+    1
+  ),
+  (
+    4,
+    'Pedidos',
+    'restaurante-pedidos',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 2h2l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L22 7H5"/></svg>',
+    3,
+    1
+  ),
+  -- 5. SERVIÇOS
+  (
+    5,
+    'Todos os serviços',
+    'servicos',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 9 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4l-3-3Z"/><path d="M9 12h6"/><path d="M12 9v6"/></svg>',
+    1,
+    1
+  ),
+  -- 6. FUNCIONÁRIOS
+  (
+    6,
+    'Todos os funcionários',
+    'funcionarios',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    1,
+    1
+  ),
+  (
+    6,
+    'Cargos e permissões',
+    'cargos-permissoes',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg>',
+    2,
+    1
+  ),
+  -- 7. RELATÓRIOS
+  (
+    7,
+    'Relatório geral',
+    'relatorio',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-5 5"/></svg>',
+    1,
+    1
+  ),
+  (
+    7,
+    'Relatório de reservas',
+    'relatorio-checkins',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 6-7"/></svg>',
+    2,
+    1
+  ),
+  (
+    7,
+    'Relatório financeiro',
+    'relatorio-financeiro',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h2"/><path d="M16 15h2"/></svg>',
+    3,
+    1
+  ),
+  (
+    7,
+    'Relatórios Restourante',
+    'relatorio-restaurante',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chef-hat preview-icon"><path d="M10 11v5"/><path d="M14 11v5"/><path d="M6 12.65c0-.457-.316-.844-.727-1.041A4 4 0 017.52 4.034a1.53 1.53 0 001.367-.547 4 4 0 016.225 0 1.53 1.53 0 001.367.547 4 4 0 012.248 7.575c-.411.197-.727.584-.727 1.04V19a2 2 0 01-2 2H8a2 2 0 01-2-2z"/><path d="M6 16h12"/></svg>',
+    6,
+    1
+  ),
+  (
+    7,
+    'Relatórios movimento',
+    'relatorio-movimento',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left-right preview-icon"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>',
+    5,
+    1
+  ),
+  (
+    7,
+    'Relatórios de saidas',
+    'relatorio-checkouts',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-door-closed-locked preview-icon"><path d="M19 8V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16"/><path d="M2 21h8"/><path d="M20 16v-2a2 2 0 00-4 0v2"/><path d="M9 12h.01"/><rect x="14" y="16" width="8" height="5" rx="1"/></svg>',
+    4,
+    1
+  ),
+  -- 8. HOTEL
+  (
+    8,
+    'Dados do hotel',
+    'hotel',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V2h18v20"/><path d="M3 7h18"/><path d="M3 12h18"/><path d="M3 17h18"/><path d="M8 7v5"/><path d="M16 7v5"/><path d="M8 12v5"/><path d="M16 12v5"/><path d="M10 22v-3h4v3"/></svg>',
+    1,
+    1
+  ),
+  (
+    8,
+    'Imagens',
+    'imagens',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>',
+    2,
+    1
+  ),
+  (
+    8,
+    'Publicar Imagems',
+    'imagens-adicionar',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image-plus preview-icon"><path d="M16 5h6"/><path d="M19 2v6"/><path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/><circle cx="9" cy="9" r="2"/></svg>',
+    3,
+    1
   );
 
 -- ============================================================

@@ -4,9 +4,7 @@ require_once __DIR__ . '/../../models/Menu.php';
 
 $menuModel = new Menu();
 
-// Buscar todos os menus
-$menus = $menuModel->getAll();
-
+$menus = $menuModel->getMenuByCargo($cargo);
 
 ?>
 <!-- Sidebar -->
@@ -14,8 +12,11 @@ $menus = $menuModel->getAll();
 
   <div class="brand">
     <div class="brand-logo">
-      <img src="<?= BASE_URL ?>/assets/img/logo-multiplo.png" alt="">
+      <a href="<?= BASE_URL ?>/app">
+        <img src="<?= BASE_URL ?>/assets/img/logo-multiplo.png" alt="">
+      </a>
     </div>
+
     <button type="button" id="showSidebar" aria-label="Alternar menu" aria-expanded="true">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -26,22 +27,25 @@ $menus = $menuModel->getAll();
     </button>
   </div>
 
-
   <nav class="navigation">
 
-    <?php foreach ($menus as $menu): ?>
+    <?php foreach ($menus as $index => $menu): ?>
 
-    <button class="nav-link" data-page="<?= $menu['chave'] ?>" title="<?= $menu['nome'] ?>">
-      <span class="nav-icon">
-        <?= $menu['icone'] ?>
-      </span>
-      <span class="nav-text">
-        <?= $menu['nome'] ?>
-      </span>
-    </button>
+      <button type="button" class="nav-link <?= $index === 0 ? 'active' : '' ?>"
+        data-page="<?= htmlspecialchars($menu['chave'], ENT_QUOTES, 'UTF-8') ?>"
+        title="<?= htmlspecialchars($menu['nome'], ENT_QUOTES, 'UTF-8') ?>">
+
+        <span class="nav-icon">
+          <?= $menu['icone'] ?>
+        </span>
+
+        <span class="nav-text">
+          <?= htmlspecialchars($menu['nome'], ENT_QUOTES, 'UTF-8') ?>
+        </span>
+
+      </button>
+
     <?php endforeach; ?>
-
-
 
   </nav>
 

@@ -51,10 +51,22 @@ a {
   justify-content: space-between;
 }
 
-.logo {
-  font-size: 24px;
-  font-weight: bold;
-  color: var(--white);
+.brand {
+  width: 150px;
+  height: 100%;
+}
+
+
+.brand .logo {
+  height: 10px;
+  width: 110px;
+}
+
+.logo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
 }
 
 nav {

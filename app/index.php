@@ -1,408 +1,106 @@
 <?php
 
+// app/painel.php
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/auth.php';
+require_once __DIR__ . '/models/Quarto.php';
+require_once __DIR__ . '/models/Andar.php';
+require_once __DIR__ . '/models/Categoria.php';
+require_once __DIR__ . '/models/Reserva.php';
+require_once __DIR__ . '/models/Imagem.php';
+require_once __DIR__ . '/models/Servico.php';
+require_once __DIR__ . '/models/Funcionario.php';
+require_once __DIR__ . '/models/Hotel.php';
+require_once __DIR__ . '/models/Localizacao.php';
+require_once __DIR__ . '/models/RelatorioReservas.php';
+require_once __DIR__ . '/models/RelatorioRestaurante.php';
 
 requireLogin('cliente');
 
-$pdo = getDB();
 $usuario = getCurrentUser();
-
-$hotel = requireHotelAccess(
-  isset($_GET['hotel_id'])
-  ? (int) $_GET['hotel_id']
-  : null
-);
-
+$hotel = requireHotelAccess(isset($_GET['hotel_id']) ? (int) $_GET['hotel_id'] : null);
 $hotelSelecionado = $hotel;
-
 $hotelId = (int) $hotel['id'];
 $nomeHotel = $hotel['nome'];
 $cargo = $hotel['cargo'];
-
-$podeGerirHotel = in_array(
-  $cargo,
-  ['proprietario', 'gerente'],
-  true
-);
-
-$podeGerirFuncionarios = $cargo === 'proprietario';
-
-$podeGerirQuartos = $podeGerirHotel;
-$podeGerirReservas = in_array(
-  $cargo,
-  ['proprietario', 'gerente', 'recepcionista'],
-  true
-);
-
-$podeCriarReserva = $podeGerirReservas;
-$podeGerirServicos = $podeGerirHotel;
-
-$podeAcederRestaurante = in_array(
-  $cargo,
-  ['proprietario', 'gerente', 'recepcionista', 'operador'],
-  true
-);
-
 $hoteis = getUserHotels();
 
-// Dados para os formulários
-$stmt = $pdo->prepare("
-    SELECT id, numero_andar, descricao
-    FROM andares
-    WHERE hotel_id = ?
-    ORDER BY numero_andar
-");
-$stmt->execute([$hotelId]);
-$andares = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$stmt = $pdo->prepare("
-    SELECT id, nome, capacidade, preco_base
-    FROM categorias_quartos
-    WHERE hotel_id = ?
-      AND ativo = 1
-    ORDER BY nome
-");
-$stmt->execute([$hotelId]);
-$categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$stmt = $pdo->prepare("
-    SELECT id, numero, categoria_id
-    FROM quartos
-    WHERE hotel_id = ?
-      AND estado = 'ativo'
-    ORDER BY numero
-");
-$stmt->execute([$hotelId]);
-$quartosAtivos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Dados do hotel
-$stmt = $pdo->prepare("
-    SELECT *
-    FROM hoteis
-    WHERE id = ?
-    LIMIT 1
-");
-$stmt->execute([$hotelId]);
-$dadosHotel = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// Províncias
-$provincias = $pdo->query("
-    SELECT id, nome
-    FROM provincias
-    ORDER BY nome
-")->fetchAll(PDO::FETCH_ASSOC);
-
-// Municípios da província atual
-$stmt = $pdo->prepare("
-    SELECT id, nome
-    FROM municipios
-    WHERE provincia_id = ?
-    ORDER BY nome
-");
-$stmt->execute([$dadosHotel['provincia_id']]);
-$municipios = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Token CSRF
 $csrfToken = $_SESSION['csrf_token'] ?? '';
+$actionUrl = BASE_URL . '/app/actions/painel.php?hotel_id=' . $hotelId;
 
-// Mensagem de resultado
 $flash = $_SESSION['painel_flash'] ?? null;
 unset($_SESSION['painel_flash']);
 
-$actionUrl = BASE_URL . '/app/actions/painel.php?hotel_id=' . $hotelId;
+// ---------- Permissões (definidas uma única vez) ----------
+$podeGerirHotel = in_array($cargo, ['proprietario', 'gerente'], true);
+$podeGerirFuncionarios = $cargo === 'proprietario';
+$podeGerirQuartos = $podeGerirHotel;
+$podeGerirReservas = in_array($cargo, ['proprietario', 'gerente', 'recepcionista'], true);
+$podeCriarReserva = $podeGerirReservas;
+$podeGerirServicos = $podeGerirHotel;
+$podeAcederRestaurante = in_array($cargo, ['proprietario', 'gerente', 'recepcionista', 'operador'], true);
 
-function contarRegistos(
-  PDO $pdo,
-  string $tabela,
-  int $hotelId
-): int {
+// ---------- Dados ----------
+$quartos = new Quarto($hotelId);
+$andaresM = new Andar($hotelId);
+$categoriaM = new Categoria($hotelId);
+$reservas = new Reserva($hotelId);
+$imagens = new Imagem($hotelId);
+$servicosM = new Servico($hotelId);
+$funcM = new Funcionario($hotelId);
+$hotelM = new Hotel($hotelId);
 
-  $tabelasPermitidas = [
-    'quartos',
-    'reservas',
-    'hotel_imagens',
-    'servicos'
-  ];
+// ---------- Relatório geral (resumo do mês) ----------
+$relatorioDataInicio = $_GET['rel_inicio'] ?? date('Y-m-01');
+$relatorioDataFim = $_GET['rel_fim'] ?? date('Y-m-d');
 
-  if (!in_array($tabela, $tabelasPermitidas, true)) {
-    return 0;
-  }
-
-  $stmt = $pdo->prepare("
-        SELECT COUNT(*)
-        FROM {$tabela}
-        WHERE hotel_id = ?
-    ");
-
-  $stmt->execute([$hotelId]);
-
-  return (int) $stmt->fetchColumn();
+// Protege contra datas inválidas vindas da URL
+try {
+  $resumoReservas = (new RelatorioReservas($hotelId))->resumoPeriodo($relatorioDataInicio, $relatorioDataFim);
+  $resumoRestaurante = (new RelatorioRestaurante($hotelId))->resumoPeriodo($relatorioDataInicio, $relatorioDataFim);
+} catch (InvalidArgumentException $e) {
+  $relatorioDataInicio = date('Y-m-01');
+  $relatorioDataFim = date('Y-m-d');
+  $resumoReservas = (new RelatorioReservas($hotelId))->resumoPeriodo($relatorioDataInicio, $relatorioDataFim);
+  $resumoRestaurante = (new RelatorioRestaurante($hotelId))->resumoPeriodo($relatorioDataInicio, $relatorioDataFim);
 }
 
-$totalQuartos = contarRegistos($pdo, 'quartos', $hotelId);
-$totalReservas = contarRegistos($pdo, 'reservas', $hotelId);
-$totalImagens = contarRegistos($pdo, 'hotel_imagens', $hotelId);
-$totalServicos = contarRegistos($pdo, 'servicos', $hotelId);
+// Quartos
+$listaQuartos = $quartos->listar();
+$quartosAtivos = $quartos->listarAtivos();
+$estatisticasQuartos = $quartos->estatisticas();
+$totalQuartos = $quartos->total();
 
-$podeGerirHotel = in_array(
-  $cargo,
-  ['proprietario', 'gerente'],
-  true
-);
+// Andares
+$listaAndares = $andaresM->listar();
+$andares = $andaresM->listarSimples();
 
-$podeGerirFuncionarios = $cargo === 'proprietario';
+// Categorias
+$listaCategorias = $categoriaM->listar();
+$categorias = $categoriaM->listarAtivas();
 
-$podeGerirQuartos = $podeGerirHotel;
+// Reservas
+$listaReservas = $reservas->listar();
+$estatisticasReservas = $reservas->estatisticas();
+$totalReservas = $reservas->total();
 
-$podeGerirReservas = in_array(
-  $cargo,
-  ['proprietario', 'gerente', 'recepcionista'],
-  true
-);
+// Imagens
+$imagensHotel = $imagens->listar();
+$totalImagens = $imagens->total();
 
-$podeCriarReserva = $podeGerirReservas;
+// Serviços
+$servicos = $servicosM->listar();
+$totalServicos = $servicosM->total();
 
-$podeGerirServicos = $podeGerirHotel;
+// Funcionários
+$listaFuncionarios = $funcM->listar();
+$estatisticasFuncionarios = $funcM->estatisticas();
 
-// ======================================
-// LISTAGEM DE QUARTOS
-// ======================================
-
-$stmt = $pdo->prepare("
-    SELECT
-        q.id,
-        q.numero,
-        q.estado,
-        c.nome AS categoria,
-        c.capacidade,
-        c.preco_base,
-        a.numero_andar,
-        a.descricao AS descricao_andar
-    FROM quartos q
-    INNER JOIN categorias_quartos c
-        ON c.id = q.categoria_id
-    INNER JOIN andares a
-        ON a.id = q.andar_id
-    WHERE q.hotel_id = ?
-    ORDER BY q.numero ASC
-");
-
-$stmt->execute([$hotelId]);
-$listaQuartos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-
-// ======================================
-// ESTATÍSTICAS DOS QUARTOS
-// ======================================
-
-$stmt = $pdo->prepare("
-    SELECT
-        COUNT(*) AS total,
-        SUM(estado = 'ativo') AS ativos,
-        SUM(estado = 'manutencao') AS manutencao,
-        SUM(estado = 'inativo') AS inativos
-    FROM quartos
-    WHERE hotel_id = ?
-");
-
-$stmt->execute([$hotelId]);
-$estatisticasQuartos = $stmt->fetch(PDO::FETCH_ASSOC);
-
-
-// ======================================
-// LISTAGEM DE ANDARES
-// ======================================
-
-$stmt = $pdo->prepare("
-    SELECT
-        a.id,
-        a.numero_andar,
-        a.descricao,
-        COUNT(q.id) AS total_quartos,
-        SUM(q.estado = 'ativo') AS quartos_ativos
-    FROM andares a
-    LEFT JOIN quartos q
-        ON q.andar_id = a.id
-        AND q.hotel_id = a.hotel_id
-    WHERE a.hotel_id = ?
-    GROUP BY a.id, a.numero_andar, a.descricao
-    ORDER BY a.numero_andar ASC
-");
-
-$stmt->execute([$hotelId]);
-$listaAndares = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-
-// ======================================
-// LISTAGEM DE CATEGORIAS
-// ======================================
-
-$stmt = $pdo->prepare("
-    SELECT
-        c.id,
-        c.nome,
-        c.capacidade,
-        c.preco_base,
-        c.ativo,
-        COUNT(q.id) AS total_quartos
-    FROM categorias_quartos c
-    LEFT JOIN quartos q
-        ON q.categoria_id = c.id
-        AND q.hotel_id = c.hotel_id
-    WHERE c.hotel_id = ?
-    GROUP BY
-        c.id,
-        c.nome,
-        c.capacidade,
-        c.preco_base,
-        c.ativo
-    ORDER BY c.nome ASC
-");
-
-$stmt->execute([$hotelId]);
-$listaCategorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Listar serviços do hotel
-$stmt = $pdo->prepare("
-    SELECT
-        id,
-        nome,
-        descricao,
-        preco,
-        tipo,
-        disponivel,
-        criado_em
-    FROM servicos
-    WHERE hotel_id = :hotel
-    ORDER BY criado_em DESC
-");
-
-$stmt->execute([
-  'hotel' => $hotelId
-]);
-
-$servicos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// ======================================
-// LISTAGEM DE RESERVAS
-// ======================================
-
-$stmt = $pdo->prepare("
-    SELECT
-        r.id,
-        r.codigo,
-        r.data_entrada,
-        r.data_saida,
-        r.quantidade_pessoas,
-        r.quantidade_noites,
-        r.preco_diaria,
-        r.total,
-        r.estado,
-        r.criado_em,
-        q.numero AS numero_quarto,
-        u.nome AS nome_utilizador
-    FROM reservas r
-    LEFT JOIN quartos q
-        ON q.id = r.quarto_id
-    LEFT JOIN usuarios u
-        ON u.id = r.usuario_id
-    WHERE r.hotel_id = ?
-    ORDER BY r.criado_em DESC
-");
-
-$stmt->execute([$hotelId]);
-$listaReservas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-
-// ======================================
-// Imagens do hotel
-// ======================================
-
-$stmt = $pdo->prepare("
-    SELECT
-        id,
-        url,
-        tipo,
-        criado_em
-    FROM hotel_imagens
-    WHERE hotel_id = ?
-    ORDER BY criado_em DESC
-");
-
-$stmt->execute([$hotelId]);
-$imagensHotel = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// ======================================
-// ESTATÍSTICAS DAS RESERVAS
-// ======================================
-
-$stmt = $pdo->prepare("
-    SELECT
-        COUNT(*) AS total,
-        SUM(estado = 'pendente') AS pendentes,
-        SUM(estado = 'confirmada') AS confirmadas,
-        SUM(estado = 'checkin') AS checkins,
-        SUM(estado = 'concluida') AS concluidas,
-        SUM(estado = 'cancelada') AS canceladas
-    FROM reservas
-    WHERE hotel_id = ?
-");
-
-$stmt->execute([$hotelId]);
-$estatisticasReservas = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// ======================================
-// LISTAGEM DE FUNCIONÁRIOS
-// ======================================
-
-$stmt = $pdo->prepare("
-    SELECT
-        hu.id,
-        hu.cargo,
-        u.id AS usuario_id,
-        u.nome,
-        u.email,
-        u.telefone,
-        u.ativo
-    FROM hotel_usuarios hu
-    INNER JOIN usuarios u
-        ON u.id = hu.usuario_id
-    WHERE hu.hotel_id = ?
-    ORDER BY
-        FIELD(hu.cargo, 'proprietario', 'gerente', 'recepcionista', 'operador'),
-        u.nome ASC
-");
-
-$stmt->execute([$hotelId]);
-$listaFuncionarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// ======================================
-// ESTATÍSTICAS DOS FUNCIONÁRIOS
-// ======================================
-$stmt = $pdo->prepare("
-    SELECT
-        COUNT(*) AS total,
-        SUM(cargo = 'proprietario') AS proprietarios,
-        SUM(cargo = 'gerente') AS gerentes,
-        SUM(cargo = 'recepcionista') AS recepcionistas,
-        SUM(cargo = 'operador') AS operadores
-    FROM hotel_usuarios
-    WHERE hotel_id = ?
-");
-
-$stmt->execute([$hotelId]);
-$estatisticasFuncionarios = $stmt->fetch(PDO::FETCH_ASSOC);
-
-$general_data = [
-  "funcionarios" => $listaFuncionarios,
-  "reservas" => $listaReservas,
-  "hoteis" => $hoteis,
-  "imagens" => $imagensHotel,
-  "servicos" => $servicos,
-]
-
-  ?>
+// Hotel e localização
+$dadosHotel = $hotelM->buscar();
+$provincias = Localizacao::provincias();
+$municipios = Localizacao::municipios((int) $dadosHotel['provincia_id']);
+?>
 
 <?php require_once __DIR__ . '/views/layouts/head.php' ?>
 
@@ -415,12 +113,13 @@ $general_data = [
     <!-- Conteúdo principal -->
     <main class="main-content">
       <?php if ($flash): ?>
-      <div class="alert alert-<?= htmlspecialchars($flash['tipo']) ?>">
-        <?= htmlspecialchars($flash['mensagem']) ?>
-      </div>
+        <div class="alert alert-<?= htmlspecialchars($flash['tipo']) ?>">
+          <?= htmlspecialchars($flash['mensagem']) ?>
+        </div>
       <?php endif; ?>
 
       <?php require_once __DIR__ . '/views/layouts/top_bar.php'; ?>
+      <?php require_once __DIR__ . '/views/layouts/tab_menu.php'; ?>
 
       <section class="page-section active" id="page-dashboard">
 
@@ -429,23 +128,19 @@ $general_data = [
           <div>
             <span class="eyebrow">ESTABELECIMENTO</span>
 
-            <h1><?= htmlspecialchars($nomeHotel) ?></h1>
-
             <p>
               Aqui podes acompanhar e gerir as operações do teu hotel.
             </p>
           </div>
 
-          <button class="btn-outline"
-            onclick="location.href='<?= BASE_URL ?>/hotel?slug=<?= urlencode($hotelSelecionado['slug']) ?>'">
+          <a class="btn-outline" target="_blank"
+            href='<?= BASE_URL ?>/hotel?slug=<?= urlencode($hotelSelecionado['slug']) ?>'>
             Ver página pública ↗
-          </button>
+          </a>
 
         </div>
 
-
         <!-- Estatísticas -->
-
         <div class="stats-grid">
 
           <div class="stat-card">
@@ -480,7 +175,6 @@ $general_data = [
 
 
         <!-- Ações rápidas -->
-
         <section class="section-block">
 
           <div class="section-heading">
@@ -577,18 +271,6 @@ $general_data = [
 ===================================== -->
       <section class="page-section" id="page-quartos">
 
-        <div class="page-header">
-          <div>
-            <span class="eyebrow">ALOJAMENTO</span>
-            <h1>Quartos</h1>
-            <p>Gere os quartos, acompanha a sua disponibilidade e consulta os respetivos detalhes.</p>
-          </div>
-
-          <button class="btn-primary" data-page="quartos-adicionar">
-            ＋ Adicionar quarto
-          </button>
-        </div>
-
         <div class="content-card">
           <div class="toolbar">
             <div>
@@ -625,15 +307,15 @@ $general_data = [
 
                 <?php if (empty($listaQuartos)): ?>
 
-                <tr>
-                  <td colspan="7">Ainda não existem quartos registados.</td>
-                </tr>
+                  <tr>
+                    <td colspan="7">Ainda não existem quartos registados.</td>
+                  </tr>
 
                 <?php else: ?>
 
-                <?php foreach ($listaQuartos as $quarto): ?>
+                  <?php foreach ($listaQuartos as $quarto): ?>
 
-                <?php
+                    <?php
                     $estadoClasses = [
                       'ativo' => 'success',
                       'manutencao' => 'warning',
@@ -649,50 +331,50 @@ $general_data = [
                     $estado = $quarto['estado'];
                     ?>
 
-                <tr>
+                    <tr>
 
-                  <td>
-                    <strong>
-                      <?= htmlspecialchars($quarto['numero']) ?>
-                    </strong>
-                  </td>
+                      <td>
+                        <strong>
+                          <?= htmlspecialchars($quarto['numero']) ?>
+                        </strong>
+                      </td>
 
-                  <td>
-                    <?= htmlspecialchars($quarto['categoria']) ?>
-                  </td>
+                      <td>
+                        <?= htmlspecialchars($quarto['categoria']) ?>
+                      </td>
 
-                  <td>
-                    <?= (int) $quarto['numero_andar'] ?>.º Andar
-                  </td>
+                      <td>
+                        <?= (int) $quarto['numero_andar'] ?>.º Andar
+                      </td>
 
-                  <td>
-                    <?= (int) $quarto['capacidade'] ?> pessoas
-                  </td>
+                      <td>
+                        <?= (int) $quarto['capacidade'] ?> pessoas
+                      </td>
 
-                  <td>
-                    <?= number_format(
+                      <td>
+                        <?= number_format(
                           (float) $quarto['preco_base'],
                           2,
                           ',',
                           '.'
                         ) ?> Kz
-                  </td>
+                      </td>
 
-                  <td>
-                    <span class="status-badge <?= $estadoClasses[$estado] ?? 'warning' ?>">
-                      <?= $estadoNomes[$estado] ?? htmlspecialchars($estado) ?>
-                    </span>
-                  </td>
+                      <td>
+                        <span class="status-badge <?= $estadoClasses[$estado] ?? 'warning' ?>">
+                          <?= $estadoNomes[$estado] ?? htmlspecialchars($estado) ?>
+                        </span>
+                      </td>
 
-                  <td>
-                    <button type="button" class="btn-icon" onclick="alert('ID do quarto: <?= (int) $quarto['id'] ?>')">
-                      •••
-                    </button>
-                  </td>
+                      <td>
+                        <button type="button" class="btn-icon" onclick="alert('ID do quarto: <?= (int) $quarto['id'] ?>')">
+                          •••
+                        </button>
+                      </td>
 
-                </tr>
+                    </tr>
 
-                <?php endforeach; ?>
+                  <?php endforeach; ?>
 
                 <?php endif; ?>
 
@@ -707,16 +389,6 @@ $general_data = [
      ADICIONAR QUARTO
 ===================================== -->
       <section class="page-section" id="page-quartos-adicionar">
-
-        <div class="page-header">
-          <div>
-            <span class="eyebrow">ALOJAMENTO</span>
-            <h1>Adicionar quarto</h1>
-            <p>Preenche os dados necessários para registar um novo quarto.</p>
-          </div>
-          <button class="btn-secondary" data-page="quartos">← Voltar aos quartos</button>
-        </div>
-
 
         <form class="content-card form-card" method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
           <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
@@ -739,9 +411,9 @@ $general_data = [
                   <option value="">Selecionar andar</option>
 
                   <?php foreach ($andares as $andar): ?>
-                  <option value="<?= (int) $andar['id'] ?>">
-                    <?= (int) $andar['numero_andar'] ?>.º Andar
-                  </option>
+                    <option value="<?= (int) $andar['id'] ?>">
+                      <?= (int) $andar['numero_andar'] ?>.º Andar
+                    </option>
                   <?php endforeach; ?>
 
                 </select>
@@ -753,10 +425,10 @@ $general_data = [
                   <option value="">Selecionar categoria</option>
 
                   <?php foreach ($categorias as $categoria): ?>
-                  <option value="<?= (int) $categoria['id'] ?>">
-                    <?= htmlspecialchars($categoria['nome']) ?>
-                    — <?= number_format((float) $categoria['preco_base'], 2, ',', '.') ?> Kz
-                  </option>
+                    <option value="<?= (int) $categoria['id'] ?>">
+                      <?= htmlspecialchars($categoria['nome']) ?>
+                      — <?= number_format((float) $categoria['preco_base'], 2, ',', '.') ?> Kz
+                    </option>
                   <?php endforeach; ?>
 
                 </select>
@@ -818,40 +490,40 @@ $general_data = [
 
           <?php if (empty($listaAndares)): ?>
 
-          <p>Este hotel ainda não possui andares registados.</p>
+            <p>Este hotel ainda não possui andares registados.</p>
 
           <?php else: ?>
 
-          <?php foreach ($listaAndares as $andar): ?>
+            <?php foreach ($listaAndares as $andar): ?>
 
-          <article class="floor-card">
+              <article class="floor-card">
 
-            <div class="floor-card-top">
-              <div class="floor-icon">🏢</div>
-              <span class="status-badge success">Registado</span>
-            </div>
+                <div class="floor-card-top">
+                  <div class="floor-icon">🏢</div>
+                  <span class="status-badge success">Registado</span>
+                </div>
 
-            <h3>
-              <?= (int) $andar['numero_andar'] ?>.º Andar
-            </h3>
+                <h3>
+                  <?= (int) $andar['numero_andar'] ?>.º Andar
+                </h3>
 
-            <p>
-              <?= htmlspecialchars($andar['descricao'] ?? 'Sem descrição') ?>
-            </p>
+                <p>
+                  <?= htmlspecialchars($andar['descricao'] ?? 'Sem descrição') ?>
+                </p>
 
-            <div class="floor-info">
-              <strong>
-                <?= (int) $andar['total_quartos'] ?> quartos
-              </strong>
+                <div class="floor-info">
+                  <strong>
+                    <?= (int) $andar['total_quartos'] ?> quartos
+                  </strong>
 
-              <span>
-                <?= (int) $andar['quartos_ativos'] ?> ativos
-              </span>
-            </div>
+                  <span>
+                    <?= (int) $andar['quartos_ativos'] ?> ativos
+                  </span>
+                </div>
 
-          </article>
+              </article>
 
-          <?php endforeach; ?>
+            <?php endforeach; ?>
 
           <?php endif; ?>
 
@@ -926,57 +598,57 @@ $general_data = [
 
           <?php if (empty($listaCategorias)): ?>
 
-          <p>Ainda não existem categorias de quartos.</p>
+            <p>Ainda não existem categorias de quartos.</p>
 
           <?php else: ?>
 
-          <?php foreach ($listaCategorias as $categoria): ?>
+            <?php foreach ($listaCategorias as $categoria): ?>
 
-          <article class="category-card">
+              <article class="category-card">
 
-            <div class="category-card-icon">🛏️</div>
+                <div class="category-card-icon">🛏️</div>
 
-            <span class="status-badge <?= $categoria['ativo'] ? 'success' : 'danger' ?>">
-              <?= $categoria['ativo'] ? 'Ativa' : 'Inativa' ?>
-            </span>
+                <span class="status-badge <?= $categoria['ativo'] ? 'success' : 'danger' ?>">
+                  <?= $categoria['ativo'] ? 'Ativa' : 'Inativa' ?>
+                </span>
 
-            <h3>
-              <?= htmlspecialchars($categoria['nome']) ?>
-            </h3>
+                <h3>
+                  <?= htmlspecialchars($categoria['nome']) ?>
+                </h3>
 
-            <div class="category-details">
+                <div class="category-details">
 
-              <div>
-                <small>Capacidade</small>
-                <strong>
-                  <?= (int) $categoria['capacidade'] ?> pessoas
-                </strong>
-              </div>
+                  <div>
+                    <small>Capacidade</small>
+                    <strong>
+                      <?= (int) $categoria['capacidade'] ?> pessoas
+                    </strong>
+                  </div>
 
-              <div>
-                <small>Preço base</small>
-                <strong>
-                  <?= number_format(
+                  <div>
+                    <small>Preço base</small>
+                    <strong>
+                      <?= number_format(
                         (float) $categoria['preco_base'],
                         2,
                         ',',
                         '.'
                       ) ?> Kz
-                </strong>
-              </div>
+                    </strong>
+                  </div>
 
-              <div>
-                <small>Quartos</small>
-                <strong>
-                  <?= (int) $categoria['total_quartos'] ?>
-                </strong>
-              </div>
+                  <div>
+                    <small>Quartos</small>
+                    <strong>
+                      <?= (int) $categoria['total_quartos'] ?>
+                    </strong>
+                  </div>
 
-            </div>
+                </div>
 
-          </article>
+              </article>
 
-          <?php endforeach; ?>
+            <?php endforeach; ?>
 
           <?php endif; ?>
 
@@ -1056,31 +728,6 @@ $general_data = [
             <h1>Reservas</h1>
             <p>Controla as reservas, entradas e saídas dos hóspedes.</p>
           </div>
-          <button class="btn-primary" data-page="reserva-presencial">＋ Nova reserva</button>
-        </div>
-
-        <div class="stats-grid">
-
-          <div class="stat-card">
-            <span>Total de reservas</span>
-            <strong><?= (int) $estatisticasReservas['total'] ?></strong>
-          </div>
-
-          <div class="stat-card">
-            <span>Pendentes</span>
-            <strong><?= (int) $estatisticasReservas['pendentes'] ?></strong>
-          </div>
-
-          <div class="stat-card">
-            <span>Confirmadas</span>
-            <strong><?= (int) $estatisticasReservas['confirmadas'] ?></strong>
-          </div>
-
-          <div class="stat-card">
-            <span>Concluídas</span>
-            <strong><?= (int) $estatisticasReservas['concluidas'] ?></strong>
-          </div>
-
         </div>
 
         <div class="content-card">
@@ -1093,10 +740,10 @@ $general_data = [
               <option value="">Selecione Uma reserva </option>
               <?php foreach ($listaReservas as $reserva): ?>
 
-              <option value="<?= $reserva['codigo'] ?>">
-                <?= $reserva['codigo'] ?> - <?= $reserva['nome_utilizador'] ?> - Quarto
-                <?= $reserva['numero_quarto'] ?>
-              </option>
+                <option value="<?= $reserva['codigo'] ?>">
+                  <?= $reserva['codigo'] ?> - <?= $reserva['nome_utilizador'] ?> - Quarto
+                  <?= $reserva['numero_quarto'] ?>
+                </option>
               <?php endforeach; ?>
             </select>
 
@@ -1136,7 +783,6 @@ $general_data = [
             <h1>Nova reserva presencial</h1>
             <p>Regista uma reserva efetuada diretamente na recepção.</p>
           </div>
-          <button class="btn-secondary" data-page="reservas">← Voltar às reservas</button>
         </div>
 
 
@@ -1181,7 +827,7 @@ $general_data = [
                   <option value="">Selecionar quarto</option>
 
                   <?php foreach ($quartosAtivos as $quarto): ?>
-                  <?php
+                    <?php
                     $categoriaQuarto = null;
 
                     foreach ($categorias as $categoria) {
@@ -1192,12 +838,12 @@ $general_data = [
                     }
                     ?>
 
-                  <option value="<?= (int) $quarto['id'] ?>">
-                    <?= htmlspecialchars($quarto['numero']) ?>
-                    <?= $categoriaQuarto
+                    <option value="<?= (int) $quarto['id'] ?>">
+                      <?= htmlspecialchars($quarto['numero']) ?>
+                      <?= $categoriaQuarto
                         ? ' - ' . htmlspecialchars($categoriaQuarto['nome'])
                         : '' ?>
-                  </option>
+                    </option>
                   <?php endforeach; ?>
 
                 </select>
@@ -1377,7 +1023,7 @@ $general_data = [
             <h1>Fotografias</h1>
             <p>Organiza e gere as imagens utilizadas na página pública do hotel.</p>
           </div>
-          <button class="btn-primary" data-page="imagens-adicionar">＋ Adicionar imagens</button>
+
         </div>
 
         <div class="content-card">
@@ -1397,22 +1043,22 @@ $general_data = [
 
           <div class="gallery-grid">
             <?php foreach ($imagensHotel as $imagem): ?>
-            <div class="gallery-item">
-              <a target="_blank" href="<?= BASE_URL ?>/hotel/photo?hotel_id=<?= $hotelId ?>?image=<?= $imagem['id'] ?>">
-                <div class="gallery-placeholder">
-                  <img src="<?= htmlspecialchars($imagem['url']) ?>" alt="Imagem do hotel">
+              <div class="gallery-item">
+                <a target="_blank" href="<?= BASE_URL ?>/hotel/photo?hotel_id=<?= $hotelId ?>?image=<?= $imagem['id'] ?>">
+                  <div class="gallery-placeholder">
+                    <img src="<?= htmlspecialchars($imagem['url']) ?>" alt="Imagem do hotel">
+                  </div>
+                </a>
+                <div class="gallery-caption">
+                  <div><strong><?= htmlspecialchars($imagem['tipo']) ?></strong><small>Imagem carregada</small></div>
+                  <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                    <input type="hidden" name="acao" value="deletar_imagens">
+                    <input type="text" id="<?= $imagem['id'] ?>" hidden name="id" value="<?= $imagem['id'] ?>">
+                    <button class="delete btn-icon" type="submit">❌</button>
+                  </form>
                 </div>
-              </a>
-              <div class="gallery-caption">
-                <div><strong><?= htmlspecialchars($imagem['tipo']) ?></strong><small>Imagem carregada</small></div>
-                <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
-                  <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
-                  <input type="hidden" name="acao" value="deletar_imagens">
-                  <input type="text" id="<?= $imagem['id'] ?>" hidden name="id" value="<?= $imagem['id'] ?>">
-                  <button class="delete btn-icon" type="submit">❌</button>
-                </form>
               </div>
-            </div>
             <?php endforeach; ?>
 
           </div>
@@ -1429,7 +1075,6 @@ $general_data = [
             <h1>Adicionar fotografias</h1>
             <p>Carrega imagens para apresentar o teu estabelecimento.</p>
           </div>
-          <button class="btn-secondary" data-page="imagens">← Voltar à galeria</button>
         </div>
 
         <form class="content-card form-card" method="POST" action="<?= htmlspecialchars($actionUrl) ?>"
@@ -1494,9 +1139,9 @@ $general_data = [
           </div>
 
           <?php if ($podeGerirHotel): ?>
-          <button class="btn-primary" data-page="adicionar-servico">
-            ＋ Adicionar serviço
-          </button>
+            <button class="btn-primary" data-page="adicionar-servico">
+              ＋ Adicionar serviço
+            </button>
           <?php endif; ?>
         </div>
 
@@ -1504,16 +1149,16 @@ $general_data = [
 
           <?php if (empty($servicos)): ?>
 
-          <div class="content-card">
-            <h3>Nenhum serviço registado</h3>
-            <p>Ainda não existem serviços cadastrados neste hotel.</p>
-          </div>
+            <div class="content-card">
+              <h3>Nenhum serviço registado</h3>
+              <p>Ainda não existem serviços cadastrados neste hotel.</p>
+            </div>
 
           <?php else: ?>
 
-          <?php foreach ($servicos as $servico): ?>
+            <?php foreach ($servicos as $servico): ?>
 
-          <?php
+              <?php
               $icone = match ($servico['nome']) {
                 'Wi-Fi' => '📶',
                 'Piscina' => '🏊',
@@ -1525,61 +1170,61 @@ $general_data = [
               };
               ?>
 
-          <article class="service-card">
-            <div class="servicos-icon-content">
+              <article class="service-card">
+                <div class="servicos-icon-content">
 
-              <div class="service-icon">
-                <?= $icone ?>
-              </div>
+                  <div class="service-icon">
+                    <?= $icone ?>
+                  </div>
 
-              <div class="service-accoes">
-                <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
-                  <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
-                  <input type="hidden" name="acao" value="deletar_servico">
-                  <input type="text" id="<?= $servico['id'] ?>" hidden name="id" value="<?= $servico['id'] ?>">
-                  <button class="delete " type="submit">Deletar</button>
-                </form>
-              </div>
-            </div>
+                  <div class="service-accoes">
+                    <form method="POST" action="<?= htmlspecialchars($actionUrl) ?>">
+                      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                      <input type="hidden" name="acao" value="deletar_servico">
+                      <input type="text" id="<?= $servico['id'] ?>" hidden name="id" value="<?= $servico['id'] ?>">
+                      <button class="delete " type="submit">Deletar</button>
+                    </form>
+                  </div>
+                </div>
 
-            <div class="service-card-content">
+                <div class="service-card-content">
 
-              <span class="status-badge <?= $servico['disponivel'] ? 'success' : 'danger' ?>">
-                <?= $servico['disponivel'] ? 'Ativo' : 'Indisponível' ?>
-              </span>
+                  <span class="status-badge <?= $servico['disponivel'] ? 'success' : 'danger' ?>">
+                    <?= $servico['disponivel'] ? 'Ativo' : 'Indisponível' ?>
+                  </span>
 
-              <h3>
-                <?= htmlspecialchars($servico['nome'], ENT_QUOTES, 'UTF-8') ?>
-              </h3>
+                  <h3>
+                    <?= htmlspecialchars($servico['nome'], ENT_QUOTES, 'UTF-8') ?>
+                  </h3>
 
-              <p>
-                <?= htmlspecialchars(
+                  <p>
+                    <?= htmlspecialchars(
                       $servico['descricao'] ?: 'Sem descrição disponível.',
                       ENT_QUOTES,
                       'UTF-8'
                     ) ?>
-              </p>
+                  </p>
 
-              <div class="service-price">
-                <?php if ($servico['tipo'] === 'gratuito'): ?>
+                  <div class="service-price">
+                    <?php if ($servico['tipo'] === 'gratuito'): ?>
 
-                <strong>Gratuito</strong>
+                      <strong>Gratuito</strong>
 
-                <?php else: ?>
+                    <?php else: ?>
 
-                <strong>
-                  <?= number_format((float) $servico['preco'], 2, ',', '.') ?>
-                  Kz
-                </strong>
+                      <strong>
+                        <?= number_format((float) $servico['preco'], 2, ',', '.') ?>
+                        Kz
+                      </strong>
 
-                <?php endif; ?>
-              </div>
+                    <?php endif; ?>
+                  </div>
 
-            </div>
+                </div>
 
-          </article>
+              </article>
 
-          <?php endforeach; ?>
+            <?php endforeach; ?>
 
           <?php endif; ?>
 
@@ -1677,12 +1322,6 @@ $general_data = [
             <p>Gere os produtos, categorias e pedidos do restaurante.</p>
           </div>
           <button class="btn-primary">＋ Novo produto</button>
-        </div>
-
-        <div class="restaurant-tabs">
-          <button class="restaurant-tab active">Pedidos</button>
-          <button class="restaurant-tab">Menu</button>
-          <button class="restaurant-tab">Categorias</button>
         </div>
 
         <div class="content-card">
@@ -1783,46 +1422,46 @@ $general_data = [
 
                 <?php if (empty($listaFuncionarios)): ?>
 
-                <tr>
-                  <td colspan="5">Ainda não existem funcionários associados.</td>
-                </tr>
+                  <tr>
+                    <td colspan="5">Ainda não existem funcionários associados.</td>
+                  </tr>
 
                 <?php else: ?>
 
-                <?php foreach ($listaFuncionarios as $funcionario): ?>
+                  <?php foreach ($listaFuncionarios as $funcionario): ?>
 
-                <tr>
+                    <tr>
 
-                  <td>
-                    <strong>
-                      <?= htmlspecialchars($funcionario['nome']) ?>
-                    </strong>
-                  </td>
+                      <td>
+                        <strong>
+                          <?= htmlspecialchars($funcionario['nome']) ?>
+                        </strong>
+                      </td>
 
-                  <td>
-                    <?= htmlspecialchars($funcionario['email']) ?>
-                  </td>
+                      <td>
+                        <?= htmlspecialchars($funcionario['email']) ?>
+                      </td>
 
-                  <td>
-                    <?= htmlspecialchars(ucfirst($funcionario['cargo'])) ?>
-                  </td>
+                      <td>
+                        <?= htmlspecialchars(ucfirst($funcionario['cargo'])) ?>
+                      </td>
 
-                  <td>
-                    <span class="status-badge <?= $funcionario['ativo'] ? 'success' : 'danger' ?>">
-                      <?= $funcionario['ativo'] ? 'Ativo' : 'Inativo' ?>
-                    </span>
-                  </td>
+                      <td>
+                        <span class="status-badge <?= $funcionario['ativo'] ? 'success' : 'danger' ?>">
+                          <?= $funcionario['ativo'] ? 'Ativo' : 'Inativo' ?>
+                        </span>
+                      </td>
 
-                  <td>
-                    <button type="button" class="btn-icon"
-                      onclick="alert('Utilizador: <?= (int) $funcionario['usuario_id'] ?>')">
-                      •••
-                    </button>
-                  </td>
+                      <td>
+                        <button type="button" class="btn-icon"
+                          onclick="alert('Utilizador: <?= (int) $funcionario['usuario_id'] ?>')">
+                          •••
+                        </button>
+                      </td>
 
-                </tr>
+                    </tr>
 
-                <?php endforeach; ?>
+                  <?php endforeach; ?>
 
                 <?php endif; ?>
 
@@ -1965,10 +1604,9 @@ $general_data = [
                   ?>
 
                   <?php foreach ($categoriasHotel as $valor => $rotulo): ?>
-                  <option value="<?= htmlspecialchars($valor) ?>"
-                    <?= $dadosHotel['categoria'] === $valor ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($rotulo) ?>
-                  </option>
+                    <option value="<?= htmlspecialchars($valor) ?>" <?= $dadosHotel['categoria'] === $valor ? 'selected' : '' ?>>
+                      <?= htmlspecialchars($rotulo) ?>
+                    </option>
                   <?php endforeach; ?>
                 </select>
               </div>
@@ -2018,10 +1656,9 @@ $general_data = [
 
                 <select class="form-control" name="provincia_id" id="provincia_id" required>
                   <?php foreach ($provincias as $provincia): ?>
-                  <option value="<?= (int) $provincia['id'] ?>"
-                    <?= (int) $dadosHotel['provincia_id'] === (int) $provincia['id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($provincia['nome']) ?>
-                  </option>
+                    <option value="<?= (int) $provincia['id'] ?>" <?= (int) $dadosHotel['provincia_id'] === (int) $provincia['id'] ? 'selected' : '' ?>>
+                      <?= htmlspecialchars($provincia['nome']) ?>
+                    </option>
                   <?php endforeach; ?>
                 </select>
               </div>
@@ -2031,10 +1668,9 @@ $general_data = [
 
                 <select class="form-control" name="municipio_id" id="municipio_id" required>
                   <?php foreach ($municipios as $municipio): ?>
-                  <option value="<?= (int) $municipio['id'] ?>"
-                    <?= (int) $dadosHotel['municipio_id'] === (int) $municipio['id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($municipio['nome']) ?>
-                  </option>
+                    <option value="<?= (int) $municipio['id'] ?>" <?= (int) $dadosHotel['municipio_id'] === (int) $municipio['id'] ? 'selected' : '' ?>>
+                      <?= htmlspecialchars($municipio['nome']) ?>
+                    </option>
                   <?php endforeach; ?>
                 </select>
               </div>
@@ -2061,6 +1697,490 @@ $general_data = [
 
       </section>
 
+      <!-- =====================================
+   RELATÓRIOS — MENU
+===================================== -->
+      <section class="page-section" id="page-relatorio">
+
+        <?php if ($podeGerirHotel): ?>
+
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">GESTÃO</span>
+              <h1>Relatório geral</h1>
+              <p>Resumo do desempenho do hotel no período selecionado.</p>
+            </div>
+          </div>
+
+          <!-- Filtro de período -->
+          <div class="content-card">
+            <form class="form-section" method="GET">
+              <input type="hidden" name="hotel_id" value="<?= (int) $hotelId ?>">
+
+              <h2>Período</h2>
+
+              <div class="form-grid">
+
+                <div class="form-group">
+                  <label for="rel_inicio">Data inicial</label>
+                  <input class="form-control" type="date" id="rel_inicio" name="rel_inicio"
+                    value="<?= htmlspecialchars($relatorioDataInicio) ?>">
+                </div>
+
+                <div class="form-group">
+                  <label for="rel_fim">Data final</label>
+                  <input class="form-control" type="date" id="rel_fim" name="rel_fim"
+                    value="<?= htmlspecialchars($relatorioDataFim) ?>">
+                </div>
+
+              </div>
+
+              <div class="form-footer">
+                <button type="submit" class="btn-primary">Atualizar</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- KPIs de reservas -->
+          <div class="section-heading">
+            <div>
+              <h2>Reservas</h2>
+              <p><?= htmlspecialchars(date('d/m/Y', strtotime($relatorioDataInicio))) ?>
+                a <?= htmlspecialchars(date('d/m/Y', strtotime($relatorioDataFim))) ?></p>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+
+            <div class="stat-card">
+              <div class="stat-icon blue">▤</div>
+              <span>Total de reservas</span>
+              <strong><?= (int) $resumoReservas['total_reservas'] ?></strong>
+              <small><?= (int) $resumoReservas['total_canceladas'] ?> canceladas</small>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon purple">🛎️</div>
+              <span>Check-ins no período</span>
+              <strong><?= (int) $resumoReservas['total_checkins'] ?></strong>
+              <small>Entradas registadas</small>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon orange">🧳</div>
+              <span>Check-outs no período</span>
+              <strong><?= (int) $resumoReservas['total_checkouts'] ?></strong>
+              <small>Saídas registadas</small>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon green">✧</div>
+              <span>Taxa de ocupação</span>
+              <strong><?= $resumoReservas['taxa_ocupacao'] ?>%</strong>
+              <small><?= (int) $resumoReservas['total_noites'] ?> noites vendidas</small>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon blue">Kz</div>
+              <span>Receita de reservas</span>
+              <strong><?= number_format((float) $resumoReservas['receita_total'], 2, ',', '.') ?></strong>
+              <small>Total do período</small>
+            </div>
+
+          </div>
+
+          <!-- KPIs de restaurante -->
+          <div class="section-heading">
+            <div>
+              <h2>Restaurante</h2>
+              <p>Pedidos de mesa, quarto e balcão no mesmo período.</p>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+
+            <div class="stat-card">
+              <div class="stat-icon purple">🍽️</div>
+              <span>Total de pedidos</span>
+              <strong><?= (int) $resumoRestaurante['total_pedidos'] ?></strong>
+              <small><?= (int) $resumoRestaurante['total_cancelados'] ?> cancelados</small>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon green">✓</div>
+              <span>Pedidos entregues</span>
+              <strong><?= (int) $resumoRestaurante['total_entregues'] ?></strong>
+              <small><?= (int) $resumoRestaurante['total_pendentes'] + (int) $resumoRestaurante['total_preparacao'] + (int) $resumoRestaurante['total_prontos'] ?>
+                em curso</small>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon orange">Kz</div>
+              <span>Receita do restaurante</span>
+              <strong><?= number_format((float) $resumoRestaurante['receita_total'], 2, ',', '.') ?></strong>
+              <small>Ticket médio: <?= number_format((float) $resumoRestaurante['ticket_medio'], 2, ',', '.') ?>
+                Kz</small>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon blue">▦</div>
+              <span>Mesa / Quarto / Balcão</span>
+              <strong><?= (int) $resumoRestaurante['total_mesa'] ?> / <?= (int) $resumoRestaurante['total_quarto'] ?> /
+                <?= (int) $resumoRestaurante['total_balcao'] ?></strong>
+              <small>Pedidos por tipo</small>
+            </div>
+
+          </div>
+
+          <!-- Atalhos para os relatórios detalhados/exportáveis -->
+          <div class="section-heading">
+            <div>
+              <h2>Relatórios detalhados</h2>
+              <p>Exporta em Excel ou PDF, com filtros próprios de cada um.</p>
+            </div>
+          </div>
+
+          <div class="modules-grid">
+
+            <button class="module-card" data-page="relatorio-checkins">
+              <span>🛎️</span>
+              <div>
+                <strong>Check-ins</strong>
+                <p>Reservas com entrada no período.</p>
+              </div>
+            </button>
+
+            <button class="module-card" data-page="relatorio-checkouts">
+              <span>🧳</span>
+              <div>
+                <strong>Check-outs</strong>
+                <p>Reservas com saída no período.</p>
+              </div>
+            </button>
+
+            <button class="module-card" data-page="relatorio-movimento">
+              <span>📋</span>
+              <div>
+                <strong>Movimento de reservas</strong>
+                <p>Check-ins e check-outs juntos.</p>
+              </div>
+            </button>
+
+            <button class="module-card" data-page="relatorio-restaurante">
+              <span>🍽️</span>
+              <div>
+                <strong>Restaurante</strong>
+                <p>Pedidos de mesa, quarto e balcão.</p>
+              </div>
+            </button>
+
+          </div>
+
+        <?php else: ?>
+
+          <div class="content-card">
+            <h3>Sem permissão</h3>
+            <p>Apenas proprietários e gerentes podem aceder aos relatórios.</p>
+          </div>
+
+        <?php endif; ?>
+
+      </section>
+
+      <!-- =====================================
+   RELATÓRIO — FINANCEIRO
+===================================== -->
+      <section class="page-section" id="page-relatorio-financeiro">
+
+        <div class="page-header">
+          <div>
+            <span class="eyebrow">RELATÓRIOS</span>
+            <h1>Relatório financeiro</h1>
+            <p>Receita diária de quartos e restaurante, consolidada.</p>
+          </div>
+          <button class="btn-secondary" data-page="relatorios">← Voltar aos relatórios</button>
+        </div>
+
+        <div class="content-card">
+          <form class="form-section" method="GET" action="<?= BASE_URL ?>/app/actions/relatorios.php" target="_blank">
+            <input type="hidden" name="hotel_id" value="<?= (int) $hotelId ?>">
+            <input type="hidden" name="tipo" value="financeiro">
+
+            <h2>Período</h2>
+
+            <div class="form-grid">
+
+              <div class="form-group">
+                <label for="financeiro_data_inicio">Data inicial *</label>
+                <input class="form-control" type="date" id="financeiro_data_inicio" name="data_inicio"
+                  value="<?= date('Y-m-01') ?>" required>
+              </div>
+
+              <div class="form-group">
+                <label for="financeiro_data_fim">Data final *</label>
+                <input class="form-control" type="date" id="financeiro_data_fim" name="data_fim"
+                  value="<?= date('Y-m-d') ?>" required>
+              </div>
+
+            </div>
+
+            <div class="form-footer">
+              <button type="submit" class="btn-secondary" name="formato" value="excel">⤓ Exportar Excel</button>
+              <button type="submit" class="btn-primary" name="formato" value="pdf">⤓ Exportar PDF</button>
+            </div>
+          </form>
+        </div>
+
+      </section>
+
+      <?php if ($podeGerirHotel): ?>
+
+        <!-- =====================================
+     RELATÓRIO — CHECK-INS
+  ===================================== -->
+        <section class="page-section" id="page-relatorio-checkins">
+
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">RELATÓRIOS</span>
+              <h1>Relatório de check-ins</h1>
+              <p>Reservas cuja entrada cai dentro do período escolhido.</p>
+            </div>
+            <button class="btn-secondary" data-page="relatorios">← Voltar aos relatórios</button>
+          </div>
+
+          <div class="content-card">
+            <form class="form-section" method="GET" action="<?= BASE_URL ?>/app/actions/relatorios.php" target="_blank">
+              <input type="hidden" name="hotel_id" value="<?= (int) $hotelId ?>">
+              <input type="hidden" name="tipo" value="checkins">
+
+              <h2>Filtros</h2>
+
+              <div class="form-grid">
+
+                <div class="form-group">
+                  <label for="checkins_estado">Estado (opcional)</label>
+                  <select class="form-control" id="checkins_estado" name="estado">
+                    <option value="">Todos os estados</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="confirmada">Confirmada</option>
+                    <option value="checkin">Check-in</option>
+                    <option value="concluida">Concluída</option>
+                    <option value="cancelada">Cancelada</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="checkins_data_inicio">Data inicial *</label>
+                  <input class="form-control" type="date" id="checkins_data_inicio" name="data_inicio"
+                    value="<?= date('Y-m-01') ?>" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="checkins_data_fim">Data final *</label>
+                  <input class="form-control" type="date" id="checkins_data_fim" name="data_fim"
+                    value="<?= date('Y-m-d') ?>" required>
+                </div>
+
+              </div>
+
+              <div class="form-footer">
+                <button type="submit" class="btn-secondary" name="formato" value="excel">⤓ Exportar Excel</button>
+                <button type="submit" class="btn-primary" name="formato" value="pdf">⤓ Exportar PDF</button>
+              </div>
+            </form>
+          </div>
+
+        </section>
+
+
+        <!-- =====================================
+     RELATÓRIO — CHECK-OUTS
+  ===================================== -->
+        <section class="page-section" id="page-relatorio-checkouts">
+
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">RELATÓRIOS</span>
+              <h1>Relatório de check-outs</h1>
+              <p>Reservas cuja saída cai dentro do período escolhido.</p>
+            </div>
+            <button class="btn-secondary" data-page="relatorios">← Voltar aos relatórios</button>
+          </div>
+
+          <div class="content-card">
+            <form class="form-section" method="GET" action="<?= BASE_URL ?>/app/actions/relatorios.php" target="_blank">
+              <input type="hidden" name="hotel_id" value="<?= (int) $hotelId ?>">
+              <input type="hidden" name="tipo" value="checkouts">
+
+              <h2>Filtros</h2>
+
+              <div class="form-grid">
+
+                <div class="form-group">
+                  <label for="checkouts_estado">Estado (opcional)</label>
+                  <select class="form-control" id="checkouts_estado" name="estado">
+                    <option value="">Todos os estados</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="confirmada">Confirmada</option>
+                    <option value="checkin">Check-in</option>
+                    <option value="concluida">Concluída</option>
+                    <option value="cancelada">Cancelada</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="checkouts_data_inicio">Data inicial *</label>
+                  <input class="form-control" type="date" id="checkouts_data_inicio" name="data_inicio"
+                    value="<?= date('Y-m-01') ?>" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="checkouts_data_fim">Data final *</label>
+                  <input class="form-control" type="date" id="checkouts_data_fim" name="data_fim"
+                    value="<?= date('Y-m-d') ?>" required>
+                </div>
+
+              </div>
+
+              <div class="form-footer">
+                <button type="submit" class="btn-secondary" name="formato" value="excel">⤓ Exportar Excel</button>
+                <button type="submit" class="btn-primary" name="formato" value="pdf">⤓ Exportar PDF</button>
+              </div>
+            </form>
+          </div>
+
+        </section>
+
+
+        <!-- =====================================
+     RELATÓRIO — MOVIMENTO DE RESERVAS
+  ===================================== -->
+        <section class="page-section" id="page-relatorio-movimento">
+
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">RELATÓRIOS</span>
+              <h1>Movimento de reservas</h1>
+              <p>Check-ins e check-outs do período, num único relatório.</p>
+            </div>
+            <button class="btn-secondary" data-page="relatorios">← Voltar aos relatórios</button>
+          </div>
+
+          <div class="content-card">
+            <form class="form-section" method="GET" action="<?= BASE_URL ?>/app/actions/relatorios.php" target="_blank">
+              <input type="hidden" name="hotel_id" value="<?= (int) $hotelId ?>">
+              <input type="hidden" name="tipo" value="movimento">
+
+              <h2>Filtros</h2>
+
+              <div class="form-grid">
+
+                <div class="form-group">
+                  <label for="movimento_estado">Estado (opcional)</label>
+                  <select class="form-control" id="movimento_estado" name="estado">
+                    <option value="">Todos os estados</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="confirmada">Confirmada</option>
+                    <option value="checkin">Check-in</option>
+                    <option value="concluida">Concluída</option>
+                    <option value="cancelada">Cancelada</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="movimento_data_inicio">Data inicial *</label>
+                  <input class="form-control" type="date" id="movimento_data_inicio" name="data_inicio"
+                    value="<?= date('Y-m-01') ?>" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="movimento_data_fim">Data final *</label>
+                  <input class="form-control" type="date" id="movimento_data_fim" name="data_fim"
+                    value="<?= date('Y-m-d') ?>" required>
+                </div>
+
+              </div>
+
+              <div class="form-footer">
+                <button type="submit" class="btn-secondary" name="formato" value="excel">⤓ Exportar Excel</button>
+                <button type="submit" class="btn-primary" name="formato" value="pdf">⤓ Exportar PDF</button>
+              </div>
+            </form>
+          </div>
+
+        </section>
+
+
+        <!-- =====================================
+     RELATÓRIO — RESTAURANTE
+  ===================================== -->
+        <section class="page-section" id="page-relatorio-restaurante">
+
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">RELATÓRIOS</span>
+              <h1>Relatório de restaurante</h1>
+              <p>Pedidos de mesa, quarto (room service) e balcão.</p>
+            </div>
+            <button class="btn-secondary" data-page="relatorios">← Voltar aos relatórios</button>
+          </div>
+
+          <div class="content-card">
+            <form class="form-section" method="GET" action="<?= BASE_URL ?>/app/actions/relatorios.php" target="_blank">
+              <input type="hidden" name="hotel_id" value="<?= (int) $hotelId ?>">
+              <input type="hidden" name="tipo" value="restaurante">
+
+              <h2>Filtros</h2>
+
+              <div class="form-grid">
+
+                <div class="form-group">
+                  <label for="restaurante_estado">Estado (opcional)</label>
+                  <select class="form-control" id="restaurante_estado" name="estado">
+                    <option value="">Todos os estados</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="preparacao">Em preparação</option>
+                    <option value="pronto">Pronto</option>
+                    <option value="entregue">Entregue</option>
+                    <option value="cancelado">Cancelado</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="restaurante_tipo_pedido">Tipo de pedido (opcional)</label>
+                  <select class="form-control" id="restaurante_tipo_pedido" name="tipo_pedido">
+                    <option value="">Todos os tipos</option>
+                    <option value="mesa">Mesa</option>
+                    <option value="quarto">Quarto (room service)</option>
+                    <option value="balcao">Balcão</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="restaurante_data_inicio">Data inicial *</label>
+                  <input class="form-control" type="date" id="restaurante_data_inicio" name="data_inicio"
+                    value="<?= date('Y-m-01') ?>" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="restaurante_data_fim">Data final *</label>
+                  <input class="form-control" type="date" id="restaurante_data_fim" name="data_fim"
+                    value="<?= date('Y-m-d') ?>" required>
+                </div>
+
+              </div>
+
+              <div class="form-footer">
+                <button type="submit" class="btn-secondary" name="formato" value="excel">⤓ Exportar Excel</button>
+                <button type="submit" class="btn-primary" name="formato" value="pdf">⤓ Exportar PDF</button>
+              </div>
+            </form>
+          </div>
+
+        </section>
+
+      <?php endif; ?>
     </main>
 
   </div>

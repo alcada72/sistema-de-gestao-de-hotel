@@ -37,15 +37,23 @@ body {
   justify-content: space-between;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
 
-  gap: 10px;
-  font-size: 19px;
-  font-weight: 750;
-  color: var(--background);
+.brand {
+  width: 150px;
+  height: 100%;
+}
+
+
+.brand .logo {
+  height: 10px;
+  width: 110px;
+}
+
+.logo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
 }
 
 .back-link {

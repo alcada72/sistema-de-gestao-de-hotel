@@ -239,9 +239,7 @@ $total = (float) $reserva['total'];
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>
-    Reserva <?= e($reserva['codigo']) ?> | Hotelaria
-  </title>
+  <?php require_once __DIR__ . '/../../config/favicon.php' ?>
 
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/reserva.css">
 </head>

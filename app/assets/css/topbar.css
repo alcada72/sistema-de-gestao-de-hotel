@@ -39,7 +39,6 @@
 
 .hotel-selector {
   border-radius: var(--radius-lg);
-  background: var(--primary-light);
 }
 
 .hotel-select-icon {
@@ -51,12 +50,12 @@
   min-width: 0;
   padding: 8px;
 
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 0;
   border-radius: var(--radius-sm);
 
   outline: none;
   background: transparent;
-  color: var(--surface);
+  color: var(--text);
 
   font-size: 13px;
   font-weight: 600;

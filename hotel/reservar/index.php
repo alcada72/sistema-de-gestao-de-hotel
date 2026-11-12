@@ -280,7 +280,7 @@ $amanha = (new DateTime('tomorrow'))->format('Y-m-d');
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reservar | <?= e($hotel['nome']) ?></title>
+  <?php require_once __DIR__ . '/../../config/favicon.php' ?>
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/reservar.css">
 </head>
 
@@ -288,7 +288,13 @@ $amanha = (new DateTime('tomorrow'))->format('Y-m-d');
 
   <header class="topbar">
     <div class="topbar-content">
-      <a href="<?= BASE_URL ?>/index.php" class="brand"><span>MultiploHotel</span></a>
+
+      <div class="brand">
+        <a href="<?= BASE_URL ?>/index.php" class="logo">
+          <img src="<?= BASE_URL ?>/assets/img/logo-multiplo.png" alt="logo multiplo">
+        </a>
+      </div>
+
       <a href="<?= BASE_URL ?>/index.php" class="back-link">Voltar aos hotéis</a>
     </div>
   </header>
@@ -302,7 +308,7 @@ $amanha = (new DateTime('tomorrow'))->format('Y-m-d');
 
     <?php if ($erro !== ''): ?>
 
-            <div class="alert alert-error" role="alert"><?= e($erro) ?></div>
+    <div class="alert alert-error" role="alert"><?= e($erro) ?></div>
     <?php endif; ?>
 
     <div class="booking-layout">
@@ -310,9 +316,9 @@ $amanha = (new DateTime('tomorrow'))->format('Y-m-d');
 
         <article class="hotel-card">
           <?php if ($imagemHotel): ?>
-              <img src="<?= e($imagemHotel) ?>" alt="<?= e($hotel['nome']) ?>" class="hotel-image">
+          <img src="<?= e($imagemHotel) ?>" alt="<?= e($hotel['nome']) ?>" class="hotel-image">
           <?php else: ?>
-              <div class="hotel-image-placeholder"><span>⌂</span></div>
+          <div class="hotel-image-placeholder"><span>⌂</span></div>
           <?php endif; ?>
 
           <div class="hotel-details">
@@ -324,177 +330,178 @@ $amanha = (new DateTime('tomorrow'))->format('Y-m-d');
             </p>
             <p class="hotel-address"><?= e($hotel['endereco']) ?></p>
             <?php if (!empty($hotel['descricao'])): ?>
-                <p class="hotel-description"><?= e($hotel['descricao']) ?></p>
+            <p class="hotel-description"><?= e($hotel['descricao']) ?></p>
             <?php endif; ?>
           </div>
         </article>
 
         <?php if (empty($quartos)): ?>
-            <div class="empty-rooms">
-              <h3>Nenhum quarto registado</h3>
-              <p>Este hotel ainda não possui quartos ativos para reserva.</p>
-            </div>
+        <div class="empty-rooms">
+          <h3>Nenhum quarto registado</h3>
+          <p>Este hotel ainda não possui quartos ativos para reserva.</p>
+        </div>
         <?php else: ?>
 
-            <!-- ETAPA 1: DATAS -->
-            <section class="availability-search">
-              <div class="section-title">
-                <span class="step-number">01</span>
-                <div>
-                  <h2>Quando pretendes ficar?</h2>
-                  <p>Escolhe as datas para consultar os quartos disponíveis.</p>
-                </div>
+        <!-- ETAPA 1: DATAS -->
+        <section class="availability-search">
+          <div class="section-title">
+            <span class="step-number">01</span>
+            <div>
+              <h2>Quando pretendes ficar?</h2>
+              <p>Escolhe as datas para consultar os quartos disponíveis.</p>
+            </div>
+          </div>
+
+          <form method="GET" class="availability-form">
+            <input type="hidden" name="hotel_id" value="<?= (int) $hotelId ?>">
+
+            <div class="form-group">
+              <label for="search_data_entrada">Data de entrada</label>
+              <input type="date" id="search_data_entrada" name="data_entrada" min="<?= date('Y-m-d') ?>"
+                value="<?= e($dataEntradaBusca) ?>" required>
+            </div>
+
+            <div class="form-group">
+              <label for="search_data_saida">Data de saída</label>
+              <input type="date" id="search_data_saida" name="data_saida" min="<?= $amanha ?>"
+                value="<?= e($dataSaidaBusca) ?>" required>
+            </div>
+
+            <button type="submit" class="submit-booking">
+              Verificar disponibilidade <span>→</span>
+            </button>
+          </form>
+        </section>
+
+        <?php if (!$datasSelecionadas): ?>
+        <div class="availability-empty">
+          <span class="availability-icon">⌕</span>
+          <h3>Consulta a disponibilidade</h3>
+          <p>Seleciona primeiro as datas da tua estadia para visualizar os quartos livres e ocupados.</p>
+        </div>
+        <?php else: ?>
+
+        <!-- ETAPA 2: UM ÚNICO FORMULÁRIO POST -->
+        <form method="POST" id="bookingForm" class="booking-form">
+          <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
+          <input type="hidden" name="data_entrada" value="<?= e($dataEntradaBusca) ?>">
+          <input type="hidden" name="data_saida" value="<?= e($dataSaidaBusca) ?>">
+
+          <section class="form-section rooms-section">
+            <div class="section-title">
+              <span class="step-number">02</span>
+              <div>
+                <h2>Escolhe o teu quarto</h2>
+                <p>Disponibilidade de <?= e($dataEntradaBusca) ?> até <?= e($dataSaidaBusca) ?>.</p>
+              </div>
+            </div>
+
+            <div class="room-filters">
+              <div class="form-group floor-select-group">
+                <label for="andarSelect">Selecionar andar</label>
+                <select id="andarSelect" class="floor-select">
+                  <option value="todos">Todos os andares</option>
+                  <?php foreach ($andares as $andar): ?>
+                  <option value="<?= (int) $andar['id'] ?>">
+                    <?= e($andar['descricao'] ?: 'Andar ' . $andar['numero_andar']) ?>
+                  </option>
+                  <?php endforeach; ?>
+                  <option value="sem-andar">Sem andar definido</option>
+                </select>
               </div>
 
-              <form method="GET" class="availability-form">
-                <input type="hidden" name="hotel_id" value="<?= (int) $hotelId ?>">
+              <div class="room-legend">
+                <span><i class="legend-dot available"></i> Disponível</span>
+                <span><i class="legend-dot occupied"></i> Ocupado</span>
+              </div>
+            </div>
 
-                <div class="form-group">
-                  <label for="search_data_entrada">Data de entrada</label>
-                  <input type="date" id="search_data_entrada" name="data_entrada" min="<?= date('Y-m-d') ?>"
-                    value="<?= e($dataEntradaBusca) ?>" required>
-                </div>
-
-                <div class="form-group">
-                  <label for="search_data_saida">Data de saída</label>
-                  <input type="date" id="search_data_saida" name="data_saida" min="<?= $amanha ?>"
-                    value="<?= e($dataSaidaBusca) ?>" required>
-                </div>
-
-                <button type="submit" class="submit-booking">
-                  Verificar disponibilidade <span>→</span>
-                </button>
-              </form>
-            </section>
-
-            <?php if (!$datasSelecionadas): ?>
-                <div class="availability-empty">
-                  <span class="availability-icon">⌕</span>
-                  <h3>Consulta a disponibilidade</h3>
-                  <p>Seleciona primeiro as datas da tua estadia para visualizar os quartos livres e ocupados.</p>
-                </div>
-            <?php else: ?>
-
-                <!-- ETAPA 2: UM ÚNICO FORMULÁRIO POST -->
-                <form method="POST" id="bookingForm" class="booking-form">
-                  <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
-                  <input type="hidden" name="data_entrada" value="<?= e($dataEntradaBusca) ?>">
-                  <input type="hidden" name="data_saida" value="<?= e($dataSaidaBusca) ?>">
-
-                  <section class="form-section rooms-section">
-                    <div class="section-title">
-                      <span class="step-number">02</span>
-                      <div>
-                        <h2>Escolhe o teu quarto</h2>
-                        <p>Disponibilidade de <?= e($dataEntradaBusca) ?> até <?= e($dataSaidaBusca) ?>.</p>
-                      </div>
-                    </div>
-
-                    <div class="room-filters">
-                      <div class="form-group floor-select-group">
-                        <label for="andarSelect">Selecionar andar</label>
-                        <select id="andarSelect" class="floor-select">
-                          <option value="todos">Todos os andares</option>
-                          <?php foreach ($andares as $andar): ?>
-                              <option value="<?= (int) $andar['id'] ?>">
-                                <?= e($andar['descricao'] ?: 'Andar ' . $andar['numero_andar']) ?>
-                              </option>
-                          <?php endforeach; ?>
-                          <option value="sem-andar">Sem andar definido</option>
-                        </select>
-                      </div>
-
-                      <div class="room-legend">
-                        <span><i class="legend-dot available"></i> Disponível</span>
-                        <span><i class="legend-dot occupied"></i> Ocupado</span>
-                      </div>
-                    </div>
-
-                    <div class="rooms-grid" id="roomsGrid">
-                      <?php foreach ($quartos as $quarto): ?>
-                          <?php
+            <div class="rooms-grid" id="roomsGrid">
+              <?php foreach ($quartos as $quarto): ?>
+              <?php
                           $ocupado = (bool) $quarto['ocupado'];
                           $andarId = $quarto['andar_id'] === null
                             ? 'sem-andar'
                             : (string) $quarto['andar_id'];
 
                           ?>
-                          <label class="room-option <?= $ocupado ? 'room-occupied' : 'room-available' ?>"
-                            data-floor="<?= e($andarId) ?>">
-                            <input type="radio" name="quarto_id" value="<?= (int) $quarto['id'] ?>"
-                              data-price="<?= e((string) $quarto['preco_base']) ?>"
-                              data-capacity="<?= (int) $quarto['capacidade'] ?>" <?= $ocupado ? 'disabled' : '' ?>             <?= (string) $dados['quarto_id'] === (string) $quarto['id'] ? 'checked' : '' ?> required>
+              <label class="room-option <?= $ocupado ? 'room-occupied' : 'room-available' ?>"
+                data-floor="<?= e($andarId) ?>">
+                <input type="radio" name="quarto_id" value="<?= (int) $quarto['id'] ?>"
+                  data-price="<?= e((string) $quarto['preco_base']) ?>"
+                  data-capacity="<?= (int) $quarto['capacidade'] ?>" <?= $ocupado ? 'disabled' : '' ?>
+                  <?= (string) $dados['quarto_id'] === (string) $quarto['id'] ? 'checked' : '' ?> required>
 
-                            <div class="room-content">
-                              <div class="room-top">
-                                <span class="room-category"><?= e($quarto['categoria_nome']) ?></span>
-                                <?php if ($ocupado): ?>
-                                    <span class="room-status occupied">Ocupado</span>
-                                <?php else: ?>
-                                    <span class="room-status available">Disponível</span>
-                                <?php endif; ?>
-                              </div>
+                <div class="room-content">
+                  <div class="room-top">
+                    <span class="room-category"><?= e($quarto['categoria_nome']) ?></span>
+                    <?php if ($ocupado): ?>
+                    <span class="room-status occupied">Ocupado</span>
+                    <?php else: ?>
+                    <span class="room-status available">Disponível</span>
+                    <?php endif; ?>
+                  </div>
 
-                              <h3>Quarto <?= e($quarto['numero']) ?></h3>
-                              <div class="room-capacity">Até <?= (int) $quarto['capacidade'] ?> hóspedes</div>
+                  <h3>Quarto <?= e($quarto['numero']) ?></h3>
+                  <div class="room-capacity">Até <?= (int) $quarto['capacidade'] ?> hóspedes</div>
 
-                              <div class="room-price">
-                                <strong><?= number_format((float) $quarto['preco_base'], 2, ',', '.') ?></strong>
-                                <span>Kz / noite</span>
-                              </div>
-                            </div>
-                          </label>
-                      <?php endforeach; ?>
-                    </div>
+                  <div class="room-price">
+                    <strong><?= number_format((float) $quarto['preco_base'], 2, ',', '.') ?></strong>
+                    <span>Kz / noite</span>
+                  </div>
+                </div>
+              </label>
+              <?php endforeach; ?>
+            </div>
 
-                    <div class="no-floor-rooms" id="noFloorRooms" hidden>
-                      Não existem quartos neste andar.
-                    </div>
-                  </section>
+            <div class="no-floor-rooms" id="noFloorRooms" hidden>
+              Não existem quartos neste andar.
+            </div>
+          </section>
 
-                  <section class="form-section">
-                    <div class="section-title">
-                      <span class="step-number">03</span>
-                      <div>
-                        <h2>Dados dos hóspedes</h2>
-                        <p>Indica quantas pessoas ficarão no quarto.</p>
-                      </div>
-                    </div>
+          <section class="form-section">
+            <div class="section-title">
+              <span class="step-number">03</span>
+              <div>
+                <h2>Dados dos hóspedes</h2>
+                <p>Indica quantas pessoas ficarão no quarto.</p>
+              </div>
+            </div>
 
-                    <div class="form-grid">
-                      <div class="form-group">
-                        <label for="quantidade_pessoas">Número de hóspedes</label>
-                        <input type="number" id="quantidade_pessoas" name="quantidade_pessoas" min="1" max="20"
-                          value="<?= e($dados['quantidade_pessoas']) ?>" required>
-                        <small id="capacityHint">Seleciona primeiro um quarto.</small>
-                      </div>
-                    </div>
-                  </section>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="quantidade_pessoas">Número de hóspedes</label>
+                <input type="number" id="quantidade_pessoas" name="quantidade_pessoas" min="1" max="20"
+                  value="<?= e($dados['quantidade_pessoas']) ?>" required>
+                <small id="capacityHint">Seleciona primeiro um quarto.</small>
+              </div>
+            </div>
+          </section>
 
-                  <section class="form-section">
-                    <div class="section-title">
-                      <span class="step-number">04</span>
-                      <div>
-                        <h2>Informações adicionais</h2>
-                        <p>Deixa uma observação para o hotel, se necessário.</p>
-                      </div>
-                    </div>
+          <section class="form-section">
+            <div class="section-title">
+              <span class="step-number">04</span>
+              <div>
+                <h2>Informações adicionais</h2>
+                <p>Deixa uma observação para o hotel, se necessário.</p>
+              </div>
+            </div>
 
-                    <div class="form-group">
-                      <label for="observacoes">Observações (opcional)</label>
-                      <textarea name="observacoes" id="observacoes" rows="4" maxlength="5000"
-                        placeholder="Ex.: preferência por quarto silencioso..."><?= e($dados['observacoes']) ?></textarea>
-                    </div>
-                  </section>
+            <div class="form-group">
+              <label for="observacoes">Observações (opcional)</label>
+              <textarea name="observacoes" id="observacoes" rows="4" maxlength="5000"
+                placeholder="Ex.: preferência por quarto silencioso..."><?= e($dados['observacoes']) ?></textarea>
+            </div>
+          </section>
 
-                  <button type="submit" class="submit-booking">
-                    Confirmar pedido de reserva <span>→</span>
-                  </button>
-                  <p class="form-security">
-                    A tua reserva será registada como pendente até à confirmação pelo hotel.
-                  </p>
-                </form>
-            <?php endif; ?>
+          <button type="submit" class="submit-booking">
+            Confirmar pedido de reserva <span>→</span>
+          </button>
+          <p class="form-security">
+            A tua reserva será registada como pendente até à confirmação pelo hotel.
+          </p>
+        </form>
+        <?php endif; ?>
         <?php endif; ?>
       </section>
 
@@ -529,142 +536,142 @@ $amanha = (new DateTime('tomorrow'))->format('Y-m-d');
   </main>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Filtro de andar: não remove quartos ocupados da grelha.
-      const andarSelect = document.getElementById('andarSelect');
-      const roomsGrid = document.getElementById('roomsGrid');
-      const noFloorRooms = document.getElementById('noFloorRooms');
+  document.addEventListener('DOMContentLoaded', () => {
+    // Filtro de andar: não remove quartos ocupados da grelha.
+    const andarSelect = document.getElementById('andarSelect');
+    const roomsGrid = document.getElementById('roomsGrid');
+    const noFloorRooms = document.getElementById('noFloorRooms');
 
-      if (andarSelect && roomsGrid) {
-        const cards = Array.from(roomsGrid.querySelectorAll('.room-option'));
+    if (andarSelect && roomsGrid) {
+      const cards = Array.from(roomsGrid.querySelectorAll('.room-option'));
 
-        function filtrarPorAndar() {
-          const andar = andarSelect.value;
-          let visiveis = 0;
+      function filtrarPorAndar() {
+        const andar = andarSelect.value;
+        let visiveis = 0;
 
-          cards.forEach(card => {
-            const mostrar = andar === 'todos' || card.dataset.floor === andar;
-            card.hidden = !mostrar;
-            if (mostrar) visiveis++;
-          });
+        cards.forEach(card => {
+          const mostrar = andar === 'todos' || card.dataset.floor === andar;
+          card.hidden = !mostrar;
+          if (mostrar) visiveis++;
+        });
 
-          noFloorRooms.hidden = visiveis > 0;
-          roomsGrid.hidden = visiveis === 0;
-        }
-
-        andarSelect.addEventListener('change', filtrarPorAndar);
-        filtrarPorAndar();
+        noFloorRooms.hidden = visiveis > 0;
+        roomsGrid.hidden = visiveis === 0;
       }
 
-      // Resumo dinâmico
-      const form = document.getElementById('bookingForm');
-      if (!form) return;
+      andarSelect.addEventListener('change', filtrarPorAndar);
+      filtrarPorAndar();
+    }
 
-      const entrada = form.querySelector('input[name="data_entrada"]');
-      const saida = form.querySelector('input[name="data_saida"]');
-      const pessoas = document.getElementById('quantidade_pessoas');
-      const capacityHint = document.getElementById('capacityHint');
+    // Resumo dinâmico
+    const form = document.getElementById('bookingForm');
+    if (!form) return;
 
-      const summaryRoom = document.getElementById('summaryRoom');
-      const summaryEntry = document.getElementById('summaryEntry');
-      const summaryExit = document.getElementById('summaryExit');
-      const summaryGuests = document.getElementById('summaryGuests');
-      const summaryNights = document.getElementById('summaryNights');
-      const summaryPrice = document.getElementById('summaryPrice');
-      const summaryTotal = document.getElementById('summaryTotal');
+    const entrada = form.querySelector('input[name="data_entrada"]');
+    const saida = form.querySelector('input[name="data_saida"]');
+    const pessoas = document.getElementById('quantidade_pessoas');
+    const capacityHint = document.getElementById('capacityHint');
 
-      let precoDiario = 0;
-      let capacidade = 0;
+    const summaryRoom = document.getElementById('summaryRoom');
+    const summaryEntry = document.getElementById('summaryEntry');
+    const summaryExit = document.getElementById('summaryExit');
+    const summaryGuests = document.getElementById('summaryGuests');
+    const summaryNights = document.getElementById('summaryNights');
+    const summaryPrice = document.getElementById('summaryPrice');
+    const summaryTotal = document.getElementById('summaryTotal');
 
-      function moeda(valor) {
-        return new Intl.NumberFormat('pt-PT', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        }).format(valor) + ' Kz';
-      }
+    let precoDiario = 0;
+    let capacidade = 0;
 
-      function formatarData(valor) {
-        if (!valor) return '--/--/----';
-        const partes = valor.split('-');
-        return partes.length === 3
-          ? `${partes[2]}/${partes[1]}/${partes[0]}`
-          : '--/--/----';
-      }
+    function moeda(valor) {
+      return new Intl.NumberFormat('pt-PT', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(valor) + ' Kz';
+    }
 
-      function calcularNoites() {
-        if (!entrada.value || !saida.value) return 0;
-        const inicio = new Date(entrada.value + 'T00:00:00');
-        const fim = new Date(saida.value + 'T00:00:00');
-        const noites = Math.round((fim - inicio) / 86400000);
-        return noites > 0 ? noites : 0;
-      }
+    function formatarData(valor) {
+      if (!valor) return '--/--/----';
+      const partes = valor.split('-');
+      return partes.length === 3 ?
+        `${partes[2]}/${partes[1]}/${partes[0]}` :
+        '--/--/----';
+    }
 
-      function atualizarResumo() {
-        const noites = calcularNoites();
-        summaryEntry.textContent = formatarData(entrada.value);
-        summaryExit.textContent = formatarData(saida.value);
-        summaryGuests.textContent = pessoas.value || '1';
-        summaryNights.textContent = String(noites);
-        summaryPrice.textContent = moeda(precoDiario);
-        summaryTotal.textContent = moeda(noites * precoDiario);
-      }
+    function calcularNoites() {
+      if (!entrada.value || !saida.value) return 0;
+      const inicio = new Date(entrada.value + 'T00:00:00');
+      const fim = new Date(saida.value + 'T00:00:00');
+      const noites = Math.round((fim - inicio) / 86400000);
+      return noites > 0 ? noites : 0;
+    }
 
-      function atualizarQuarto() {
-        const selecionado = form.querySelector('input[name="quarto_id"]:checked:not(:disabled)');
+    function atualizarResumo() {
+      const noites = calcularNoites();
+      summaryEntry.textContent = formatarData(entrada.value);
+      summaryExit.textContent = formatarData(saida.value);
+      summaryGuests.textContent = pessoas.value || '1';
+      summaryNights.textContent = String(noites);
+      summaryPrice.textContent = moeda(precoDiario);
+      summaryTotal.textContent = moeda(noites * precoDiario);
+    }
 
-        if (!selecionado) {
-          precoDiario = 0;
-          capacidade = 0;
-          summaryRoom.textContent = 'Não selecionado';
-          pessoas.removeAttribute('max');
-          capacityHint.textContent = 'Seleciona primeiro um quarto.';
-          atualizarResumo();
-          return;
-        }
+    function atualizarQuarto() {
+      const selecionado = form.querySelector('input[name="quarto_id"]:checked:not(:disabled)');
 
-        precoDiario = Number(selecionado.dataset.price) || 0;
-        capacidade = Number(selecionado.dataset.capacity) || 1;
-
-        summaryRoom.textContent = selecionado
-          .closest('.room-option')
-          .querySelector('h3').textContent;
-
-        pessoas.max = String(capacidade);
-        capacityHint.textContent = `Este quarto suporta até ${capacidade} hóspedes.`;
-
-        if (Number(pessoas.value) > capacidade) {
-          pessoas.value = String(capacidade);
-        }
-
+      if (!selecionado) {
+        precoDiario = 0;
+        capacidade = 0;
+        summaryRoom.textContent = 'Não selecionado';
+        pessoas.removeAttribute('max');
+        capacityHint.textContent = 'Seleciona primeiro um quarto.';
         atualizarResumo();
+        return;
       }
 
-      form.querySelectorAll('input[name="quarto_id"]').forEach(radio => {
-        radio.addEventListener('change', atualizarQuarto);
-      });
+      precoDiario = Number(selecionado.dataset.price) || 0;
+      capacidade = Number(selecionado.dataset.capacity) || 1;
 
-      pessoas.addEventListener('input', atualizarResumo);
+      summaryRoom.textContent = selecionado
+        .closest('.room-option')
+        .querySelector('h3').textContent;
 
-      form.addEventListener('submit', event => {
-        const selecionado = form.querySelector('input[name="quarto_id"]:checked:not(:disabled)');
+      pessoas.max = String(capacidade);
+      capacityHint.textContent = `Este quarto suporta até ${capacidade} hóspedes.`;
 
-        if (!selecionado) {
-          event.preventDefault();
-          alert('Seleciona um quarto disponível.');
-          return;
-        }
+      if (Number(pessoas.value) > capacidade) {
+        pessoas.value = String(capacidade);
+      }
 
-        const quantidade = Number(pessoas.value);
-        const limite = Number(selecionado.dataset.capacity);
+      atualizarResumo();
+    }
 
-        if (!Number.isInteger(quantidade) || quantidade < 1 || quantidade > limite) {
-          event.preventDefault();
-          alert('A quantidade de hóspedes não é válida para este quarto.');
-        }
-      });
-
-      atualizarQuarto();
+    form.querySelectorAll('input[name="quarto_id"]').forEach(radio => {
+      radio.addEventListener('change', atualizarQuarto);
     });
+
+    pessoas.addEventListener('input', atualizarResumo);
+
+    form.addEventListener('submit', event => {
+      const selecionado = form.querySelector('input[name="quarto_id"]:checked:not(:disabled)');
+
+      if (!selecionado) {
+        event.preventDefault();
+        alert('Seleciona um quarto disponível.');
+        return;
+      }
+
+      const quantidade = Number(pessoas.value);
+      const limite = Number(selecionado.dataset.capacity);
+
+      if (!Number.isInteger(quantidade) || quantidade < 1 || quantidade > limite) {
+        event.preventDefault();
+        alert('A quantidade de hóspedes não é válida para este quarto.');
+      }
+    });
+
+    atualizarQuarto();
+  });
   </script>
 
 </body>

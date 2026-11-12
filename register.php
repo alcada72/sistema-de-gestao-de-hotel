@@ -96,10 +96,9 @@ if (
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Criar conta | MultiploHotel</title>
+  <?php require_once __DIR__ . '/config/favicon.php' ?>
 
   <link rel="stylesheet" href="./assets/css/style.css">
-
   <style>
     #productLogin {
       display: flex;

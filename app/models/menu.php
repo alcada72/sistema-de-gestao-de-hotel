@@ -320,6 +320,11 @@ class Menu
   /**
    * Obter menu completo (com itens ativos) conforme o cargo.
    */
+
+  /**
+   * Obter menus completos, incluindo os respetivos itens ativos,
+   * conforme as permissões do cargo.
+   */
   public function getMenuByCargo(string $cargo): array
   {
     $cargo = $this->normalizarCargo($cargo);
@@ -329,20 +334,73 @@ class Menu
     }
 
     $stmt = $this->pdo->prepare("
-  SELECT m.id, m.nome, m.chave, m.icone
-  FROM menu m
-  WHERE m.ativo = 1
-    AND EXISTS (
-      SELECT 1 FROM menu_permissoes mp
-      WHERE mp.menu_id = m.id AND mp.cargo = :cargo
-    )
-  ORDER BY m.ordem ASC, m.id ASC
-");
+        SELECT
+            m.id AS menu_id,
+            m.nome AS menu_nome,
+            m.chave,
+            m.icone AS menu_icone,
+            m.ordem AS menu_ordem,
 
+            mi.id AS item_id,
+            mi.nome AS item_nome,
+            mi.link AS item_link,
+            mi.icone AS item_icone,
+            mi.ordem AS item_ordem
+
+        FROM menu m
+
+        INNER JOIN menu_permissoes mp
+            ON mp.menu_id = m.id
+
+        LEFT JOIN menu_items mi
+            ON mi.menu_id = m.id
+            AND mi.ativo = 1
+
+        WHERE m.ativo = 1
+          AND mp.cargo = :cargo
+
+        ORDER BY
+            m.ordem ASC,
+            m.id ASC,
+            mi.ordem ASC,
+            mi.id ASC
+    ");
 
     $stmt->execute(['cargo' => $cargo]);
 
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    return $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    $resultado = [];
+
+    foreach ($rows as $row) {
+
+      $menuId = (int) $row['menu_id'];
+
+      // Criar o menu principal apenas uma vez.
+      if (!isset($resultado[$menuId])) {
+
+        $resultado[$menuId] = [
+          'id' => $menuId,
+          'nome' => $row['menu_nome'],
+          'chave' => $row['chave'],
+          'icone' => $row['menu_icone'],
+          'items' => []
+        ];
+      }
+
+      // Adicionar os itens ao respetivo menu.
+      if ($row['item_id'] !== null) {
+
+        $resultado[$menuId]['items'][] = [
+          'id' => (int) $row['item_id'],
+          'nome' => $row['item_nome'],
+          'link' => $row['item_link'],
+          'icone' => $row['item_icone']
+        ];
+      }
+    }
+
+    return array_values($resultado);
   }
+
 }
